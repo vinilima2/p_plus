@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "780562670814",
+    "project_id": "qualidade-produtividade-app",
+    "storage_bucket": "qualidade-produtividade-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:780562670814:android:5a1f63604c3e7695cf0e4f",
+        "android_client_info": {
+          "package_name": "com.example.p_plus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBK7wlxZHvfjLrJ-BYThAKzSfcyypxRWSc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
