@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:p_plus/providers/autenticacao_provider.dart';
+import 'package:p_plus/routes/routes.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,16 +10,19 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'P+',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.blueAccent),
-      ),
-      home:  Container(
-        child: Text('P+'),
+    return ChangeNotifierProvider<AutenticacaoProvider>(
+      create: (_) => AutenticacaoProvider(),
+      child: MaterialApp(
+        title: 'P+',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blueAccent,
+          ),
+        ),
+        routes: Routes.rotasPadrao,
+        initialRoute: 'login',
       ),
     );
   }
