@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 void main() async {
   // As duas linhas abaixo iniciam o Firebase antes de desenhar a tela
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform, name: 'app-p-plus');
 
   runApp(const MyApp());
 }
