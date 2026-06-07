@@ -29,7 +29,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final autenticacao = context.read<AutenticacaoProvider>();
-
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
