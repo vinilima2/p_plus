@@ -20,6 +20,22 @@ class AnalistaService {
     }
   }
 
+  Future<List<Analista>?> obterAnalistasPorEquipe(String idEquipe) async {
+    try {
+      QuerySnapshot snapshot = await _db.collection('analista').where(
+        'id_equipe', isEqualTo: idEquipe
+      ).get();
+      if (snapshot.size != 0) {
+        return snapshot.docs.map((doc) => Analista.fromFirestore(doc)).toList();
+      }
+      else {
+        return null;
+      }
+    } catch (error) {
+      throw "Erro ao obter Analistas da Equipe: ${error.toString()}";
+    }
+  }
+
   Future<void> editarDadosAnalista(String idAnalista, String nome, String email) async {
     try {
       await _db.collection('analista').doc(idAnalista).update({
@@ -56,7 +72,7 @@ class AnalistaService {
   Future<void> excluirAnalista(String id) async {
     try {
       AcaoService acaoService = AcaoService();
-      List<Acao>? acoes = await acaoService.obterAcoesTotaisPorAnalista(id);
+      List<Acao>? acoes = await acaoService.obterAcoesTotaisPorAnalista(id, null);
       if (acoes != null) {
         for (Acao acao in acoes) {
         acaoService.excluirAcao(acao.id ?? '');
@@ -66,5 +82,21 @@ class AnalistaService {
     } catch (error) {
       throw "Erro ao excluir Analista: ${error.toString()}";
     }    
+  }
+
+  Future<String?> criarAnalista(Analista analista) async {
+    try {
+      DocumentReference novoAnalista = await _db.collection('analista').add({
+        'nome': analista.nome,
+        'email': analista.email,
+        'senha': analista.senha,
+        'id_equipe': analista.idEquipe,
+        'status': 1,
+        'descricao_status': 'Ativo'
+      });
+      return novoAnalista.id;
+    } catch (error) {
+      throw "Erro ao criar Analista: ${error.toString()}";
+    }       
   }
 }

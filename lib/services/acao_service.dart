@@ -18,11 +18,15 @@ class AcaoService {
     }
   }
 
-  Future<List<Acao>?> obterAcoesTotaisPorAnalista(String idAnalista) async {
+  Future<List<Acao>?> obterAcoesTotaisPorAnalista(String idAnalista, String? dataAcao) async {
     try {
-      QuerySnapshot snapshot = await _db.collection('acao').where(
-      'id_analista', isEqualTo: idAnalista
-    ).get();
+      QuerySnapshot snapshot = dataAcao == null ? await _db.collection('acao').where(
+        'id_analista', isEqualTo: idAnalista
+      ).get() : await _db.collection('acao').where(
+        'id_analista', isEqualTo: idAnalista
+      ).where(
+        'data_acao', isEqualTo: dataAcao
+      ).get();
       if (snapshot.size != 0) {
         return snapshot.docs.map((doc) => Acao.fromFirestore(doc)).toList();
       }
@@ -34,10 +38,16 @@ class AcaoService {
     }
   }
 
-  Future<List<Acao>?> obterAcoesIndiretasPorAnalista(String idAnalista) async {
+  Future<List<Acao>?> obterAcoesIndiretasPorAnalista(String idAnalista, String? dataAcao) async {
     try {
-      QuerySnapshot snapshot = await _db.collection('acao').where(
+      QuerySnapshot snapshot = dataAcao == null ? await _db.collection('acao').where(
         'id_analista', isEqualTo: idAnalista
+      ).where(
+        'tipo_acao', isEqualTo: 'Indireta'
+      ).get() : await _db.collection('acao').where(
+        'id_analista', isEqualTo: idAnalista
+      ).where(
+        'data_acao', isEqualTo: dataAcao
       ).where(
         'tipo_acao', isEqualTo: 'Indireta'
       ).get();
@@ -52,19 +62,25 @@ class AcaoService {
     }
   }
 
-  Future<List<Acao>?> obterAcoesDiretasPorAnalista(String idAnalista) async {
-    try {
-      QuerySnapshot snapshot = await _db.collection('acao').where(
-        'id_analista', isEqualTo: idAnalista
-      ).where(
-        'tipo_acao', isEqualTo: 'Direta'
-      ).get();
-      if (snapshot.size != 0) {
-        return snapshot.docs.map((doc) => Acao.fromFirestore(doc)).toList();
-      }
-      else {
-        return null;
-      }
+  Future<List<Acao>?> obterAcoesDiretasPorAnalista(String idAnalista, String? dataAcao) async {
+      try {
+        QuerySnapshot snapshot = dataAcao == null ? await _db.collection('acao').where(
+          'id_analista', isEqualTo: idAnalista
+        ).where(
+          'tipo_acao', isEqualTo: 'Direta'
+        ).get() : await _db.collection('acao').where(
+          'id_analista', isEqualTo: idAnalista
+        ).where(
+          'data_acao', isEqualTo: dataAcao
+        ).where(
+          'tipo_acao', isEqualTo: 'Direta'
+        ).get();
+        if (snapshot.size != 0) {
+          return snapshot.docs.map((doc) => Acao.fromFirestore(doc)).toList();
+        }
+        else {
+          return null;
+        }
     } catch (error) {
       throw "Erro ao obter Ações Diretas do Analista: ${error.toString()}";
     }
