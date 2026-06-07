@@ -6,12 +6,12 @@ class Analista extends Gestor {
   String? idEquipe;
 
   Analista({ 
-    String? id,
-    required String nome,
-    required String email,
-    required String senha,
+    super.id,
+    required super.nome,
+    required super.email,
+    required super.senha,
     required this.status,
     required this.descricaoStatus,
     required this.idEquipe
-  }): super(id: id, nome: nome, email: email, senha: senha );
+  });
 }
