@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:p_plus/dtos/gestor.dart';
 
 class Analista extends Gestor {
@@ -13,4 +14,17 @@ class Analista extends Gestor {
     required this.status,
     required this.descricaoStatus,
   });
+
+  factory Analista.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
+    return Analista(
+      id: doc.id,
+      idEquipe: data['id_equipe'] ?? '<desconhecido>',
+      nome: data['nome'] ?? '<desconhecido>',
+      email: data['email'] ?? '<desconhecido>',
+      senha: data['senha'] ?? '<desconhecido>',
+      status: data['status'] ?? '<desconhecido>',
+      descricaoStatus: data['descricao_status'] ?? '<desconhecido>'
+    );
+  }
 }
