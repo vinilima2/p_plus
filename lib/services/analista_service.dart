@@ -86,6 +86,15 @@ class AnalistaService {
 
   Future<String?> criarAnalista(Analista analista) async {
     try {
+      QuerySnapshot snapshotAnalista = await _db.collection('analista').where(
+        'email', isEqualTo: analista.email
+      ).get();
+      QuerySnapshot snapshotGestor = await _db.collection('gestor').where(
+        'email', isEqualTo: analista.email
+      ).get();
+      if (snapshotAnalista.size != 0 || snapshotGestor.size != 0) {
+        return null; // identificou que o e-mail a ser cadastrado já existe na base
+      }
       DocumentReference novoAnalista = await _db.collection('analista').add({
         'nome': analista.nome,
         'email': analista.email,
