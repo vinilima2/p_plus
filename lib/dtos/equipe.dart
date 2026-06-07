@@ -1,9 +1,9 @@
 class Equipe {
-  
-  String? id; // tipo de dados: UUID
-  int? metaAcoesIndiretas; // tipo de dados: INT
-  int? metaAcoesDiretas; // tipo de dados: INT
-  String? idGestor; // tipo de dados: UUID
+
+  String? id; 
+  int? metaAcoesIndiretas; 
+  int? metaAcoesDiretas; 
+  String? idGestor; 
 
   Equipe({
     this.id,
