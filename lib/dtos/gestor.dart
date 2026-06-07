@@ -6,12 +6,14 @@ class Gestor {
   String? nome;
   String? email;
   String? senha;
+  String? idEquipe;
 
   Gestor({
     this.id,
     required this.nome,
     required this.email,
-    required this.senha
+    required this.senha,
+    required this.idEquipe
   });
   
   factory Gestor.fromFirestore(DocumentSnapshot doc) {
@@ -20,7 +22,8 @@ class Gestor {
       id: doc.id,
       nome: data['nome'] ?? '<desconhecido>',
       email: data['email'] ?? '<desconhecido>',
-      senha: data['senha'] ?? '<desconhecido>'
+      senha: data['senha'] ?? '<desconhecido>',
+      idEquipe: data['id_equipe'] ?? '<desconhecido>'
     );
   }
 }
