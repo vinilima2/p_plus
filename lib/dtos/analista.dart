@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:p_plus/dtos/gestor.dart';
 
 class Analista extends Gestor {
-  bool? status; // 1 = ATIVO <---> 2 = INATIVO
+  bool? status; // 1 = ATIVO <---> 0 = INATIVO
   String? descricaoStatus; // descreve a justificativa do status do analista para detalhamento
 
   Analista({ 
