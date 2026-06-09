@@ -9,7 +9,7 @@ class Acao {
   String? turnoOperador;
   String? tipoAcao;
   String? acao;
-  DateTime? dataAcao;
+  String? dataAcao;
   String? quartil;
   String? operacao;
   String? celula;
@@ -30,7 +30,6 @@ class Acao {
   
   factory Acao.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data() as Map<String, dynamic>;
-    Timestamp dataAcao = doc.get('data_acao');
     return Acao(
       id: doc.id,
       idAnalista: data['id_analista'] ?? '<desconhecido>',
@@ -39,7 +38,7 @@ class Acao {
       turnoOperador: data['turno_operador'] ?? '<desconhecido>',
       tipoAcao: data['tipo_acao'] ?? '<desconhecido>',
       acao: data['acao'] ?? '<desconhecido>',
-      dataAcao: dataAcao.toDate(),
+      dataAcao: data['data_acao'] ?? '<desconhecido>',
       quartil: data['quartil'] ?? '<desconhecido>',
       operacao: data['operacao'] ?? '<desconhecido>',
       celula: data['celula'] ?? '<desconhecido>' 
