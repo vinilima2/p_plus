@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p_plus/providers/autenticacao_provider.dart';
+import 'package:p_plus/screens/detalhes_screen.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
@@ -14,17 +15,72 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int indice = 0;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   void mudarTela(int novoIndice) {
     setState(() {
       indice = novoIndice;
     });
   }
 
+  String _formatarDataHora(DateTime dataHora) {
+    final diasSemana = [
+      'Segunda-feira',
+      'Terça-feira',
+      'Quarta-feira',
+      'Quinta-feira',
+      'Sexta-feira',
+      'Sábado',
+      'Domingo',
+    ];
+
+    final dia = dataHora.day.toString().padLeft(2, '0');
+    final mes = dataHora.month.toString().padLeft(2, '0');
+    final hora = dataHora.hour.toString().padLeft(2, '0');
+    final minuto = dataHora.minute.toString().padLeft(2, '0');
+    final semana = diasSemana[dataHora.weekday - 1];
+
+    return '$dia/$mes/${dataHora.year} - $semana - $hora:$minuto';
+  }
+
+  Widget indicadorCard({
+    required String titulo,
+    required String valor,
+    required Color cor,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 10,
+      ),
+      padding: const EdgeInsets.symmetric(
+        vertical: 20,
+      ),
+      decoration: BoxDecoration(
+        color: cor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Text(
+            titulo,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            valor,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,60 +89,93 @@ class _HomeState extends State<Home> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
+          centerTitle: true,
+          title: Text(
+            'Bem-vindo ${autenticacao.nome ?? ""}',
+          ),
           actions: [
-            Text(autenticacao.nome ?? ''),
             IconButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.pushReplacementNamed(context, 'login');
               },
-              icon: Icon(Icons.logout),
+              icon: const Icon(
+                Icons.close,
+                color: Colors.red,
+              ),
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: IndexedStack(
-            index: indice,
-            children: [
-              Container(child: Column(
+        body: IndexedStack(
+          index: indice,
+          children: [
+            SingleChildScrollView(
+              child: Column(
                 children: [
-                  Text('Tela 1'),
-                  ElevatedButton(onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext modalContext) {
-                        return AlertDialog(
-                            title: SingleChildScrollView(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Titulo do Modal'
-                                  ),
-                                ],
-                              ),
-                            ),
-                            content: Container(
-                              child:Text('Condeúdo'),
-                            ),
-                            actionsAlignment: MainAxisAlignment.center,
-                            actions: [
-                              IconButton(onPressed: (){}, icon: Icon(Icons.save))
-                            ]);
-                      },
-                    );
-                  }, child: Text('Exemplo do modal'))
+                  const SizedBox(height: 20),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      'Você atingiu 30% da sua meta diária!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 22,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.cyan,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Text(
+                      _formatarDataHora(DateTime.now()),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  indicadorCard(
+                    titulo: 'Ações realizadas',
+                    valor: '100',
+                    cor: Colors.indigo,
+                  ),
+                  indicadorCard(
+                    titulo: 'Ações diretas',
+                    valor: '75',
+                    cor: Colors.green,
+                  ),
+                  indicadorCard(
+                    titulo: 'Ações indiretas',
+                    valor: '25',
+                    cor: Colors.purple,
+                  ),
                 ],
-              )),
-              Container(child: Text('2')),
-              Container(child: Text('3')),
-            ],
-          ),
+              ),
+            ),
+            const DetalhesScreen(),
+            const Center(
+              child: Text(
+                'Tela 3',
+                style: TextStyle(fontSize: 24),
+              ),
+            ),
+          ],
         ),
         bottomNavigationBar: BottomNavigationBar(
-          onTap: mudarTela,
           currentIndex: indice,
-          items: [
-            BottomNavigationBarItem(label: '', icon: Icon(Icons.home)),
+          onTap: mudarTela,
+          items: const [
+            BottomNavigationBarItem(
+              label: '',
+              icon: Icon(Icons.home),
+            ),
             BottomNavigationBarItem(
               label: '',
               icon: Icon(Icons.phonelink_lock_rounded),
