@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p_plus/providers/autenticacao_provider.dart';
+import 'package:p_plus/screens/detalhes_screen.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
@@ -18,6 +19,26 @@ class _HomeState extends State<Home> {
     setState(() {
       indice = novoIndice;
     });
+  }
+
+  String _formatarDataHora(DateTime dataHora) {
+    final diasSemana = [
+      'Segunda-feira',
+      'Terça-feira',
+      'Quarta-feira',
+      'Quinta-feira',
+      'Sexta-feira',
+      'Sábado',
+      'Domingo',
+    ];
+
+    final dia = dataHora.day.toString().padLeft(2, '0');
+    final mes = dataHora.month.toString().padLeft(2, '0');
+    final hora = dataHora.hour.toString().padLeft(2, '0');
+    final minuto = dataHora.minute.toString().padLeft(2, '0');
+    final semana = diasSemana[dataHora.weekday - 1];
+
+    return '$dia/$mes/${dataHora.year} - $semana - $hora:$minuto';
   }
 
   Widget indicadorCard({
@@ -92,7 +113,6 @@ class _HomeState extends State<Home> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
@@ -103,9 +123,7 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -116,28 +134,24 @@ class _HomeState extends State<Home> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Text(
-                      DateTime.now().toString(),
+                      _formatarDataHora(DateTime.now()),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 15),
-
                   indicadorCard(
                     titulo: 'Ações realizadas',
                     valor: '100',
                     cor: Colors.indigo,
                   ),
-
                   indicadorCard(
                     titulo: 'Ações diretas',
                     valor: '75',
                     cor: Colors.green,
                   ),
-
                   indicadorCard(
                     titulo: 'Ações indiretas',
                     valor: '25',
@@ -146,14 +160,7 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
-
-            const Center(
-              child: Text(
-                'Tela 2',
-                style: TextStyle(fontSize: 24),
-              ),
-            ),
-
+            const DetalhesScreen(),
             const Center(
               child: Text(
                 'Tela 3',
@@ -163,22 +170,22 @@ class _HomeState extends State<Home> {
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
-            currentIndex: indice,
-            onTap: mudarTela,
-            items: const [
-              BottomNavigationBarItem(
-                label: '',
-                icon: Icon(Icons.home),
-              ),
-              BottomNavigationBarItem(
-                label: '',
-                icon: Icon(Icons.phonelink_lock_rounded),
-              ),
-              BottomNavigationBarItem(
-                label: '',
-                icon: Icon(Icons.calendar_month),
-              ),
-            ]
+          currentIndex: indice,
+          onTap: mudarTela,
+          items: const [
+            BottomNavigationBarItem(
+              label: '',
+              icon: Icon(Icons.home),
+            ),
+            BottomNavigationBarItem(
+              label: '',
+              icon: Icon(Icons.phonelink_lock_rounded),
+            ),
+            BottomNavigationBarItem(
+              label: '',
+              icon: Icon(Icons.calendar_month),
+            ),
+          ],
         ),
       ),
     );
