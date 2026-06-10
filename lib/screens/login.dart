@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:p_plus/providers/autenticacao_provider.dart';
+import 'package:p_plus/services/login_service.dart';
+import 'package:p_plus/services/analista_service.dart';
+import 'package:p_plus/services/gestor_service.dart';
 import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {
@@ -26,9 +29,7 @@ class _LoginState extends State<Login> {
         builder: (context) {
           return AlertDialog(
             title: const Text('Atenção'),
-            content: const Text(
-              'Preencha email e senha para continuar.',
-            ),
+            content: const Text('Preencha email e senha para continuar.'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -44,14 +45,75 @@ class _LoginState extends State<Login> {
       return;
     }
 
-    /// LOGIN SIMULADO
-    context.read<AutenticacaoProvider>().atualizarDados(
-          token: 'abc123',
-          nome: 'Teste',
-          email: email,
-        );
+    LoginService loginService = LoginService();
 
-    Navigator.of(context).pushNamed('home');
+    loginService.login(email, senha).then((dados) {
+      if (mounted) {
+        if (dados != null) {
+          if (dados.tipoUsuario == 'Analista') {
+            AnalistaService().obterAnalista(dados.idUsuario ?? '').then((analista) {
+              if (mounted) {
+                context.read<AutenticacaoProvider>().atualizarDados(
+                  token: dados.idUsuario ?? '',
+                  nome: analista?.nome ?? 'Analista',
+                  email: email,
+                );
+                Navigator.of(context).pushNamed('home');
+              }
+            });
+          } else if (dados.tipoUsuario == 'Gestor') {
+            GestorService().obterGestor(dados.idUsuario ?? '').then((gestor) {
+              if (mounted) {
+                context.read<AutenticacaoProvider>().atualizarDados(
+                  token: dados.idUsuario ?? '',
+                  nome: gestor?.nome ?? 'Gestor',
+                  email: email,
+                );
+                Navigator.of(context).pushNamed('gestor');
+              }
+            });
+          }
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Erro de Autenticação'),
+                content: const Text('E-mail ou senha incorretos.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      }
+    }).catchError((error) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Erro'),
+              content: Text(error.toString()),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    });
   }
 
   @override
@@ -66,8 +128,7 @@ class _LoginState extends State<Login> {
 
             child: SingleChildScrollView(
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 40),
 
@@ -93,8 +154,7 @@ class _LoginState extends State<Login> {
                     'Bem-vindo!',
                     style: TextStyle(
                       fontSize: 22,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
@@ -106,39 +166,26 @@ class _LoginState extends State<Login> {
                     width: 230,
                     height: 55,
                     child: TextFormField(
-                      controller:
-                          emailController,
-                      textAlign:
-                          TextAlign.center,
-                      decoration:
-                          InputDecoration(
+                      controller: emailController,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
                         hintText: 'Email',
 
-                        contentPadding:
-                            const EdgeInsets
-                                .symmetric(
+                        contentPadding: const EdgeInsets.symmetric(
                           vertical: 14,
                         ),
 
-                        enabledBorder:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(20),
-                          borderSide:
-                              const BorderSide(
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(
                             color: Colors.black,
                             width: 2.5,
                           ),
                         ),
 
-                        focusedBorder:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(20),
-                          borderSide:
-                              const BorderSide(
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(
                             color: Colors.black,
                             width: 2.5,
                           ),
@@ -154,54 +201,37 @@ class _LoginState extends State<Login> {
                     width: 230,
                     height: 55,
                     child: TextFormField(
-                      controller:
-                          senhaController,
-                      obscureText:
-                          obscurePassword,
-                      textAlign:
-                          TextAlign.center,
-                      decoration:
-                          InputDecoration(
+                      controller: senhaController,
+                      obscureText: obscurePassword,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
                         hintText: 'Senha',
 
-                        suffixIcon:
-                            IconButton(
+                        suffixIcon: IconButton(
                           icon: Icon(
                             obscurePassword
-                                ? Icons
-                                    .visibility_off
-                                : Icons
-                                    .visibility,
-                            color:
-                                Colors.black,
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Colors.black,
                           ),
                           onPressed: () {
                             setState(() {
-                              obscurePassword =
-                                  !obscurePassword;
+                              obscurePassword = !obscurePassword;
                             });
                           },
                         ),
 
-                        enabledBorder:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(20),
-                          borderSide:
-                              const BorderSide(
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(
                             color: Colors.black,
                             width: 2.5,
                           ),
                         ),
 
-                        focusedBorder:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(20),
-                          borderSide:
-                              const BorderSide(
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(
                             color: Colors.black,
                             width: 2.5,
                           ),
@@ -217,22 +247,12 @@ class _LoginState extends State<Login> {
                     width: 140,
                     height: 50,
                     child: ElevatedButton(
-                      style:
-                          ElevatedButton
-                              .styleFrom(
-                        backgroundColor:
-                            Colors.white,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
                         elevation: 0,
-                        side:
-                            const BorderSide(
-                          color: Colors.black,
-                          width: 2.5,
-                        ),
-                        shape:
-                            RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(18),
+                        side: const BorderSide(color: Colors.black, width: 2.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
                         ),
                       ),
 
@@ -240,11 +260,7 @@ class _LoginState extends State<Login> {
 
                       child: const Text(
                         'Entrar',
-                        style: TextStyle(
-                          color:
-                              Colors.black,
-                          fontSize: 18,
-                        ),
+                        style: TextStyle(color: Colors.black, fontSize: 18),
                       ),
                     ),
                   ),
@@ -252,12 +268,7 @@ class _LoginState extends State<Login> {
                   const SizedBox(height: 45),
 
                   /// LOGO
-                  SizedBox(
-                    width: 110,
-                    child: Image.asset(
-                      'assets/logo.png',
-                    ),
-                  ),
+                  SizedBox(width: 110, child: Image.asset('assets/logo.png')),
 
                   const SizedBox(height: 40),
                 ],

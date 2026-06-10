@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:p_plus/providers/autenticacao_provider.dart';
 import 'package:p_plus/screens/detalhes_screen.dart';
+import 'package:p_plus/services/analista_service.dart';
+import 'package:p_plus/services/equipe_service.dart';
+import 'package:p_plus/services/acao_service.dart';
+import 'package:p_plus/utils/custom_date_utils.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
@@ -14,32 +18,77 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int indice = 0;
+  bool _carregando = true;
+  int _totalAcoes = 0;
+  int _acoesDiretas = 0;
+  int _acoesIndiretas = 0;
+  int _porcentagemMeta = 0;
 
   void mudarTela(int novoIndice) {
     setState(() {
       indice = novoIndice;
     });
+    if (novoIndice == 0) {
+      _carregarDados();
+    }
   }
 
-  String _formatarDataHora(DateTime dataHora) {
-    final diasSemana = [
-      'Segunda-feira',
-      'Terça-feira',
-      'Quarta-feira',
-      'Quinta-feira',
-      'Sexta-feira',
-      'Sábado',
-      'Domingo',
-    ];
-
-    final dia = dataHora.day.toString().padLeft(2, '0');
-    final mes = dataHora.month.toString().padLeft(2, '0');
-    final hora = dataHora.hour.toString().padLeft(2, '0');
-    final minuto = dataHora.minute.toString().padLeft(2, '0');
-    final semana = diasSemana[dataHora.weekday - 1];
-
-    return '$dia/$mes/${dataHora.year} - $semana - $hora:$minuto';
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _carregarDados();
   }
+
+
+  Future<void> _carregarDados() async {
+    final autenticacao = context.read<AutenticacaoProvider>();
+    final idAnalista = autenticacao.token;
+    if (idAnalista == null || idAnalista.isEmpty) return;
+
+    try {
+      final analistaService = AnalistaService();
+      final equipeService = EquipeService();
+      final acaoService = AcaoService();
+
+      final analista = await analistaService.obterAnalista(idAnalista);
+      if (analista != null && analista.idEquipe != null) {
+        final equipe = await equipeService.obterEquipe(analista.idEquipe!);
+        
+        final dataHoje = CustomDateUtils.dataAtualString();
+        final acoesTotais = await acaoService.obterAcoesTotaisPorAnalista(idAnalista, dataHoje) ?? [];
+        final acoesDiretas = await acaoService.obterAcoesDiretasPorAnalista(idAnalista, dataHoje) ?? [];
+        final acoesIndiretas = await acaoService.obterAcoesIndiretasPorAnalista(idAnalista, dataHoje) ?? [];
+
+        final metaTotal = (equipe?.metaAcoesDiretas ?? 0) + (equipe?.metaAcoesIndiretas ?? 0);
+        final totalRealizado = acoesTotais.length;
+        final porcentagem = metaTotal > 0 ? ((totalRealizado / metaTotal) * 100).round() : 0;
+
+        if (mounted) {
+          setState(() {
+            _totalAcoes = totalRealizado;
+            _acoesDiretas = acoesDiretas.length;
+            _acoesIndiretas = acoesIndiretas.length;
+            _porcentagemMeta = porcentagem;
+            _carregando = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _carregando = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _carregando = false;
+        });
+      }
+    }
+  }
+
+
 
   Widget indicadorCard({
     required String titulo,
@@ -112,12 +161,14 @@ class _HomeState extends State<Home> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
-                      'Você atingiu 30% da sua meta diária!',
+                      _carregando
+                          ? 'Carregando metas...'
+                          : 'Você atingiu $_porcentagemMeta% da sua meta diária!',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 22,
                       ),
                     ),
@@ -133,7 +184,7 @@ class _HomeState extends State<Home> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Text(
-                      _formatarDataHora(DateTime.now()),
+                      CustomDateUtils.formatarDataHora(DateTime.now()),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -143,17 +194,17 @@ class _HomeState extends State<Home> {
                   const SizedBox(height: 15),
                   indicadorCard(
                     titulo: 'Ações realizadas',
-                    valor: '100',
+                    valor: _carregando ? '...' : '$_totalAcoes',
                     cor: Colors.indigo,
                   ),
                   indicadorCard(
                     titulo: 'Ações diretas',
-                    valor: '75',
+                    valor: _carregando ? '...' : '$_acoesDiretas',
                     cor: Colors.green,
                   ),
                   indicadorCard(
                     titulo: 'Ações indiretas',
-                    valor: '25',
+                    valor: _carregando ? '...' : '$_acoesIndiretas',
                     cor: Colors.purple,
                   ),
                 ],
