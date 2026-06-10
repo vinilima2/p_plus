@@ -19,9 +19,8 @@ class _GestorScreenState extends State<GestorScreen> {
   String? _idEquipe;
   List<Analista> membros = [];
 
-  // Metas
-  int metaDiretas = 0;
-  int metaIndiretas = 0;
+  int metaDiretas = 75;
+  int metaIndiretas = 25;
 
   @override
   void didChangeDependencies() {
@@ -226,7 +225,7 @@ class _GestorScreenState extends State<GestorScreen> {
               color: estaAtivo ? Colors.red : Colors.green,
             ),
             onPressed: () {
-              _mostrarBloquearUsuario(membro);
+              _mostrarBloquearUsuario(membro, 0); // NÃO ENTENDI O QUE A VARIÁVEL 'INDEX' SIGNIFICA!!
             },
           ),
         ],
@@ -330,36 +329,30 @@ class _GestorScreenState extends State<GestorScreen> {
     );
   }
 
-  // 4. BLOQUEAR USUÁRIO
-  void _mostrarBloquearUsuario(Analista membro) {
-    final bool estaAtivo = membro.status ?? true;
+  // 4. BLOQUEAR USUÁRIO (ATUALIZADO COM MOTIVO)
+  void _mostrarBloquearUsuario(Analista membro, int index) {
+    final bool estaAtivo = membros[index].status ?? false;
 
     ModalBloquearUsuario.mostrar(
       context,
       membro.nome ?? '',
       estaAtivo,
-      (motivo) async {
-        try {
-          if (estaAtivo) {
-            final descStatus = motivo.isEmpty ? 'Inativo' : motivo;
-            await AnalistaService().bloquearAnalista(membro.id ?? '', descStatus);
-          } else {
-            await AnalistaService().desbloquearAnalista(membro.id ?? '');
-          }
-          _carregarDados();
-          if (mounted) {
-            final novoStatus = estaAtivo ? 'bloqueado' : 'ativado';
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${membro.nome} foi $novoStatus!')),
-            );
-          }
-        } catch (error) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
-          }
-        }
+      (String motivo) {  // ← Agora recebe o motivo!
+        setState(() {
+          membros[index].status = !estaAtivo;
+          // Guarda o motivo no membro (para mostrar depois ou enviar pra API)
+          membros[index].descricaoStatus = motivo;
+        });
+
+        final acao = !estaAtivo ? 'ativado' : 'bloqueado';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${membro.nome ?? ''} foi $acao\nMotivo: $motivo',
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
       },
     );
   }
