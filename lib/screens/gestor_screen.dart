@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:p_plus/providers/autenticacao_provider.dart';
+import 'package:p_plus/services/analista_service.dart';
+import 'package:p_plus/services/gestor_service.dart';
+import 'package:p_plus/services/equipe_service.dart';
+import 'package:p_plus/dtos/analista.dart';
 import '../widgets/gestor_modals.dart';
 
 class GestorScreen extends StatefulWidget {
@@ -9,17 +15,59 @@ class GestorScreen extends StatefulWidget {
 }
 
 class _GestorScreenState extends State<GestorScreen> {
-  // Lista de membros da equipe (dados mockados)
-  final List<Map<String, dynamic>> membros = [
-    {'nome': 'João Silva', 'cargo': 'Analista', 'ativo': true, 'email': 'joao@email.com'},
-    {'nome': 'Maria Souza', 'cargo': 'Monitor', 'ativo': true, 'email': 'maria@email.com'},
-    {'nome': 'Pedro Lima', 'cargo': 'Analista', 'ativo': true, 'email': 'pedro@email.com'},
-    {'nome': 'Ana Costa', 'cargo': 'Monitor', 'ativo': false, 'email': 'ana@email.com'},
-  ];
+  bool _carregando = true;
+  String? _idEquipe;
+  List<Analista> membros = [];
 
-  // Metas (mockadas)
-  int metaDiretas = 75;
-  int metaIndiretas = 25;
+  // Metas
+  int metaDiretas = 0;
+  int metaIndiretas = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _carregarDados();
+  }
+
+  Future<void> _carregarDados() async {
+    final autenticacao = context.read<AutenticacaoProvider>();
+    final idGestor = autenticacao.token;
+    if (idGestor == null || idGestor.isEmpty) return;
+
+    try {
+      final gestorService = GestorService();
+      final equipeService = EquipeService();
+      final analistaService = AnalistaService();
+
+      final gestor = await gestorService.obterGestor(idGestor);
+      if (gestor != null && gestor.idEquipe != null) {
+        _idEquipe = gestor.idEquipe;
+        final equipe = await equipeService.obterEquipe(gestor.idEquipe!);
+        final listaMembros = await analistaService.obterAnalistasPorEquipe(gestor.idEquipe!) ?? [];
+
+        if (mounted) {
+          setState(() {
+            metaDiretas = equipe?.metaAcoesDiretas ?? 0;
+            metaIndiretas = equipe?.metaAcoesIndiretas ?? 0;
+            membros = listaMembros;
+            _carregando = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _carregando = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _carregando = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,13 +112,17 @@ class _GestorScreenState extends State<GestorScreen> {
 
               // ========== LISTA DE MEMBROS DA EQUIPE ==========
               Expanded(
-                child: ListView.builder(
-                  itemCount: membros.length,
-                  itemBuilder: (context, index) {
-                    final membro = membros[index];
-                    return _buildMembroCard(membro, index);
-                  },
-                ),
+                child: _carregando
+                    ? const Center(child: CircularProgressIndicator())
+                    : membros.isEmpty
+                        ? const Center(child: Text('Nenhum analista na equipe.'))
+                        : ListView.builder(
+                            itemCount: membros.length,
+                            itemBuilder: (context, index) {
+                              final membro = membros[index];
+                              return _buildMembroCard(membro);
+                            },
+                          ),
               ),
             ],
           ),
@@ -117,7 +169,8 @@ class _GestorScreenState extends State<GestorScreen> {
   }
 
   // ========== WIDGET: Card de cada membro ==========
-  Widget _buildMembroCard(Map<String, dynamic> membro, int index) {
+  Widget _buildMembroCard(Analista membro) {
+    final bool estaAtivo = membro.status ?? true;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -133,17 +186,17 @@ class _GestorScreenState extends State<GestorScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  membro['nome'],
+                  membro.nome ?? '',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  membro['cargo'],
-                  style: const TextStyle(
+                  estaAtivo ? 'Analista (Ativo)' : 'Analista (Bloqueado)',
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey,
+                    color: estaAtivo ? Colors.grey : Colors.red,
                   ),
                 ),
               ],
@@ -154,7 +207,7 @@ class _GestorScreenState extends State<GestorScreen> {
           IconButton(
             icon: const Icon(Icons.close, color: Colors.red),
             onPressed: () {
-              _mostrarExcluirMembro(membro['nome'], index);
+              _mostrarExcluirMembro(membro);
             },
           ),
 
@@ -169,11 +222,11 @@ class _GestorScreenState extends State<GestorScreen> {
           // Botão: Bloquear/Desativar (ícone vermelho com barra ou verde)
           IconButton(
             icon: Icon(
-              membro['ativo'] ? Icons.block : Icons.check_circle,
-              color: membro['ativo'] ? Colors.red : Colors.green,
+              estaAtivo ? Icons.block : Icons.check_circle,
+              color: estaAtivo ? Colors.red : Colors.green,
             ),
             onPressed: () {
-              _mostrarBloquearUsuario(membro, index);
+              _mostrarBloquearUsuario(membro);
             },
           ),
         ],
@@ -223,60 +276,93 @@ class _GestorScreenState extends State<GestorScreen> {
   }
 
   // 2. EXCLUIR MEMBRO
-  void _mostrarExcluirMembro(String nome, int index) {
+  void _mostrarExcluirMembro(Analista membro) {
     ModalExcluirMembro.mostrar(
       context,
-      nome,
-          () {
-        setState(() {
-          membros.removeAt(index);
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$nome foi excluído!')),
-        );
+      membro.nome ?? '',
+      () async {
+        try {
+          await AnalistaService().excluirAnalista(membro.id ?? '');
+          _carregarDados();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${membro.nome} foi excluído!')),
+            );
+          }
+        } catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error.toString())),
+            );
+          }
+        }
       },
     );
   }
 
   // 3. EDITAR CADASTRO
-  void _mostrarEditarCadastro(Map<String, dynamic> membro) {
+  void _mostrarEditarCadastro(Analista membro) {
+    final Map<String, dynamic> membroMap = {
+      'nome': membro.nome,
+      'email': membro.email,
+      'ativo': membro.status ?? true,
+    };
     ModalEditarCadastro.mostrar(
       context,
-      membro,
-          () {
-        setState(() {
-          // Aqui você salvaria as alterações no backend
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cadastro alterado!')),
-        );
+      membroMap,
+      (novoNome, novoEmail) async {
+        try {
+          await AnalistaService().editarDadosAnalista(membro.id ?? '', novoNome, novoEmail);
+          _carregarDados();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Cadastro alterado com sucesso!')),
+            );
+          }
+        } catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error.toString())),
+            );
+          }
+        }
       },
     );
   }
 
   // 4. BLOQUEAR USUÁRIO
-  void _mostrarBloquearUsuario(Map<String, dynamic> membro, int index) {
-    final bool estaAtivo = membros[index]['ativo'];
+  void _mostrarBloquearUsuario(Analista membro) {
+    final bool estaAtivo = membro.status ?? true;
 
     ModalBloquearUsuario.mostrar(
       context,
-      membro['nome'],
+      membro.nome ?? '',
       estaAtivo,
-          () {
-
-        setState(() {
-          membros[index]['ativo'] = !estaAtivo;
-        });
-
-        final novoStatus = !estaAtivo ? 'ativado' : 'bloqueado';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${membro['nome']} foi $novoStatus!')),
-        );
+      (motivo) async {
+        try {
+          if (estaAtivo) {
+            final descStatus = motivo.isEmpty ? 'Inativo' : motivo;
+            await AnalistaService().bloquearAnalista(membro.id ?? '', descStatus);
+          } else {
+            await AnalistaService().desbloquearAnalista(membro.id ?? '');
+          }
+          _carregarDados();
+          if (mounted) {
+            final novoStatus = estaAtivo ? 'bloqueado' : 'ativado';
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${membro.nome} foi $novoStatus!')),
+            );
+          }
+        } catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error.toString())),
+            );
+          }
+        }
       },
     );
   }
-
 
   // 5. ALTERAR META
   void _mostrarAlterarMeta() {
@@ -284,14 +370,23 @@ class _GestorScreenState extends State<GestorScreen> {
       context,
       metaDiretas,
       metaIndiretas,
-          (novasDiretas, novasIndiretas) {
-        setState(() {
-          metaDiretas = novasDiretas;
-          metaIndiretas = novasIndiretas;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Meta alterada com sucesso!')),
-        );
+      (novasDiretas, novasIndiretas) async {
+        if (_idEquipe == null) return;
+        try {
+          await EquipeService().editarMetas(_idEquipe!, novasIndiretas, novasDiretas);
+          _carregarDados();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Meta alterada com sucesso!')),
+            );
+          }
+        } catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error.toString())),
+            );
+          }
+        }
       },
     );
   }
@@ -300,19 +395,45 @@ class _GestorScreenState extends State<GestorScreen> {
   void _mostrarNovoUsuario() {
     ModalNovoUsuario.mostrar(
       context,
-          () {
-        setState(() {
-          membros.add({
-            'nome': 'Novo Usuário ${membros.length + 1}',
-            'cargo': 'Analista',
-            'ativo': true,
-            'email': 'novo${membros.length + 1}@email.com',
-          });
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Novo usuário cadastrado!')),
-        );
+      (nome, email, senha) async {
+        if (_idEquipe == null) return;
+        if (nome.isEmpty || email.isEmpty || senha.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Preencha todos os campos!')),
+          );
+          return;
+        }
+        try {
+          final analista = Analista(
+            nome: nome,
+            email: email,
+            senha: senha,
+            idEquipe: _idEquipe!,
+            status: true,
+            descricaoStatus: 'Ativo',
+          );
+          String? novoId = await AnalistaService().criarAnalista(analista);
+          if (novoId == null) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Erro: E-mail já cadastrado!')),
+              );
+            }
+          } else {
+            _carregarDados();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Novo analista cadastrado com sucesso!')),
+              );
+            }
+          }
+        } catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error.toString())),
+            );
+          }
+        }
       },
     );
   }
@@ -321,7 +442,7 @@ class _GestorScreenState extends State<GestorScreen> {
   void _mostrarInserirAcoes() {
     ModalInserirAcoes.mostrar(
       context,
-          () {
+      () {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Ações inseridas com sucesso!')),
         );

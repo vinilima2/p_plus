@@ -23,7 +23,7 @@ class Analista extends Gestor {
       nome: data['nome'] ?? '<desconhecido>',
       email: data['email'] ?? '<desconhecido>',
       senha: data['senha'] ?? '<desconhecido>',
-      status: data['status'] ?? '<desconhecido>',
+      status: data['status'] == true || data['status'] == 1 || data['status'] == '1',
       descricaoStatus: data['descricao_status'] ?? '<desconhecido>'
     );
   }

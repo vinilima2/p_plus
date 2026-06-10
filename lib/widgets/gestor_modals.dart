@@ -86,7 +86,7 @@ class ModalExcluirMembro {
 // MODAL 2: EDITAR CADASTRO (Slide 7)
 // ============================================================
 class ModalEditarCadastro {
-  static void mostrar(BuildContext context, Map<String, dynamic> membro, VoidCallback onSalvar) {
+  static void mostrar(BuildContext context, Map<String, dynamic> membro, Function(String, String) onSalvar) {
     final nomeController = TextEditingController(text: membro['nome']);
     final emailController = TextEditingController(text: membro['email'] ?? '');
     bool ativo = membro['ativo'] ?? true;
@@ -199,7 +199,7 @@ class ModalEditarCadastro {
                       ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          onSalvar();
+                          onSalvar(nomeController.text.trim(), emailController.text.trim());
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.cyan,
@@ -243,7 +243,9 @@ class ModalEditarCadastro {
 // MODAL 3: BLOQUEAR USUÁRIO (Slide 8)
 // ============================================================
 class ModalBloquearUsuario {
-  static void mostrar(BuildContext context, String nomeMembro, bool estaAtivo, VoidCallback onBloquear) {
+  static void mostrar(BuildContext context, String nomeMembro, bool estaAtivo, Function(String) onBloquear) {
+    final motivoController = TextEditingController();
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -261,9 +263,9 @@ class ModalBloquearUsuario {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Bloquear usuário',
-                style: TextStyle(
+              Text(
+                estaAtivo ? 'Bloquear usuário' : 'Desbloquear usuário',
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                 ),
@@ -279,11 +281,11 @@ class ModalBloquearUsuario {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: estaAtivo ? Colors.green[700] : Colors.red[700],
+                      color: !estaAtivo ? Colors.green[700] : Colors.red[700],
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      estaAtivo ? 'ATIVO' : 'INATIVO',
+                      !estaAtivo ? 'ATIVO' : 'INATIVO',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -294,23 +296,40 @@ class ModalBloquearUsuario {
               ),
               const SizedBox(height: 24),
 
-              // Botão Bloquear (vermelho)
+              if (estaAtivo) ...[
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Motivo do bloqueio:', style: TextStyle(fontSize: 16)),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: motivoController,
+                  decoration: const InputDecoration(
+                    hintText: 'Ex: Férias, Desligamento, etc.',
+                    isDense: true,
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // Botão Confirmar
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  onBloquear();
+                  onBloquear(motivoController.text.trim());
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: estaAtivo ? Colors.red : Colors.green,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Bloquear',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: Text(
+                  estaAtivo ? 'Bloquear' : 'Desbloquear',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -445,7 +464,7 @@ class ModalAlterarMeta {
 // MODAL 5: NOVO USUÁRIO (Slide 10)
 // ============================================================
 class ModalNovoUsuario {
-  static void mostrar(BuildContext context, VoidCallback onCadastrar) {
+  static void mostrar(BuildContext context, Function(String, String, String) onCadastrar) {
     final nomeController = TextEditingController();
     final emailController = TextEditingController();
     final senhaController = TextEditingController();
@@ -546,7 +565,11 @@ class ModalNovoUsuario {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      onCadastrar();
+                      onCadastrar(
+                        nomeController.text.trim(),
+                        emailController.text.trim(),
+                        senhaController.text.trim(),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.cyan,

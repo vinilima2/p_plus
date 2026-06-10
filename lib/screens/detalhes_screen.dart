@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:p_plus/utils/constants.dart';
+import 'package:p_plus/utils/custom_date_utils.dart';
+import 'package:provider/provider.dart';
+import 'package:p_plus/providers/autenticacao_provider.dart';
+import 'package:p_plus/services/acao_service.dart';
+import 'package:p_plus/dtos/acao.dart';
 
 class DetalhesScreen extends StatefulWidget {
   const DetalhesScreen({super.key});
@@ -9,37 +15,152 @@ class DetalhesScreen extends StatefulWidget {
 
 class _DetalhesScreenState extends State<DetalhesScreen> {
   int periodoSelecionado = 0;
+  bool _carregando = true;
+  List<Acao> _todasAcoes = [];
+  List<_CelulaResumo> _celulasExibidas = [];
+  List<_AcaoRanking> _rankingExibido = [];
 
-  final List<String> periodos = const [
-    'Dia',
-    'Semana',
-    '15 dias',
-    'Mês atual',
-    'Mês anterior',
-  ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _carregarAcoes();
+  }
 
-  final List<_CelulaResumo> celulas = const [
-    _CelulaResumo('Retenção', 40, 12, Color(0xFF056D10)),
-    _CelulaResumo('SAC', 35, 10, Color(0xFFD5007D)),
-    _CelulaResumo('Suporte', 27, 8, Color(0xFF2AB7A9)),
-    _CelulaResumo('Ouvidoria', 25, 6, Color(0xFFE46A00)),
-  ];
+  Future<void> _carregarAcoes() async {
+    final autenticacao = context.read<AutenticacaoProvider>();
+    final idAnalista = autenticacao.token;
+    if (idAnalista == null || idAnalista.isEmpty) return;
 
-  final List<_AcaoRanking> ranking = const [
-    _AcaoRanking('Feedback de empatia', 40),
-    _AcaoRanking('Correção de script obrigatório', 35),
-    _AcaoRanking('Ajuste de tabulação no CRM', 27),
-    _AcaoRanking('Coaching de encerramento', 25),
-    _AcaoRanking('Reescuta de atendimento crítico', 21),
-    _AcaoRanking('Orientação sobre sondagem', 18),
-    _AcaoRanking('Tratativa de rechamada', 15),
-    _AcaoRanking('Alinhamento de oferta/benefício', 12),
-    _AcaoRanking('Calibração de nota QA', 10),
-    _AcaoRanking('Registro de oportunidade de melhoria', 8),
-  ];
+    try {
+      final acaoService = AcaoService();
+      final acoes = await acaoService.obterAcoesTotaisPorAnalista(idAnalista, null) ?? [];
+      _todasAcoes = acoes;
+      _atualizarPeriodo();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _carregando = false;
+        });
+      }
+    }
+  }
+
+
+  bool _isNoPeriodo(DateTime date, int periodoIdx) {
+    final now = DateTime.now();
+    final hoje = DateTime(now.year, now.month, now.day);
+    final dataAcao = DateTime(date.year, date.month, date.day);
+
+    switch (periodoIdx) {
+      case 0: // Dia (Hoje)
+        return dataAcao.isAtSameMomentAs(hoje);
+      case 1: // Semana (últimos 7 dias)
+        final limiteSemana = hoje.subtract(const Duration(days: 7));
+        return dataAcao.isAfter(limiteSemana.subtract(const Duration(seconds: 1))) && 
+               dataAcao.isBefore(hoje.add(const Duration(days: 1)));
+      case 2: // 15 dias (últimos 15 dias)
+        final limite15 = hoje.subtract(const Duration(days: 15));
+        return dataAcao.isAfter(limite15.subtract(const Duration(seconds: 1))) && 
+               dataAcao.isBefore(hoje.add(const Duration(days: 1)));
+      case 3: // Mês atual
+        return dataAcao.year == hoje.year && dataAcao.month == hoje.month;
+      case 4: // Mês anterior
+        final mesAnterior = hoje.month == 1 ? 12 : hoje.month - 1;
+        final anoAnterior = hoje.month == 1 ? hoje.year - 1 : hoje.year;
+        return dataAcao.year == anoAnterior && dataAcao.month == mesAnterior;
+      default:
+        return false;
+    }
+  }
+
+  bool _isDireta(String tipoAcao) {
+    final lower = tipoAcao.toLowerCase();
+    if (lower == 'direta') return true;
+    if (lower == 'indireta') return false;
+    final directKeywords = ['feedback', 'correção', 'coaching', 'reescuta', 'orientação', 'calibração', 'calibragem'];
+    for (var kw in directKeywords) {
+      if (lower.contains(kw)) return true;
+    }
+    return false;
+  }
+
+  void _atualizarPeriodo() {
+    final acoesNoPeriodo = _todasAcoes.where((acao) {
+      final date = CustomDateUtils.converterData(acao.dataAcao);
+      if (date == null) return false;
+      return _isNoPeriodo(date, periodoSelecionado);
+    }).toList();
+
+    // 1. Agrupar por celula
+    final Map<String, List<Acao>> porCelula = {};
+    for (var acao in acoesNoPeriodo) {
+      final cel = acao.celula ?? '<desconhecido>';
+      porCelula.putIfAbsent(cel, () => []).add(acao);
+    }
+
+    final coresCelulas = const [
+      Color(0xFF056D10),
+      Color(0xFFD5007D),
+      Color(0xFF2AB7A9),
+      Color(0xFFE46A00),
+    ];
+
+    final List<_CelulaResumo> listCelulas = [];
+    porCelula.forEach((celula, acoes) {
+      int diretas = acoes.where((a) => _isDireta(a.tipoAcao ?? '')).length;
+      int indiretas = acoes.length - diretas;
+      listCelulas.add(_CelulaResumo(celula, diretas, indiretas, Colors.grey));
+    });
+
+    listCelulas.sort((a, b) => (b.diretas + b.indiretas).compareTo(a.diretas + a.indiretas));
+    
+    final List<_CelulaResumo> top4Celulas = [];
+    for (int i = 0; i < listCelulas.length && i < 4; i++) {
+      final c = listCelulas[i];
+      top4Celulas.add(_CelulaResumo(
+        c.nome,
+        c.diretas,
+        c.indiretas,
+        coresCelulas[i % coresCelulas.length],
+      ));
+    }
+
+    // 2. Agrupar por acao
+    final Map<String, int> contagemAcoes = {};
+    for (var acao in acoesNoPeriodo) {
+      final desc = acao.acao ?? '<desconhecido>';
+      contagemAcoes[desc] = (contagemAcoes[desc] ?? 0) + 1;
+    }
+
+    final List<_AcaoRanking> listRanking = [];
+    contagemAcoes.forEach((nome, total) {
+      listRanking.add(_AcaoRanking(nome, total));
+    });
+
+    listRanking.sort((a, b) => b.total.compareTo(a.total));
+
+    final top10Ranking = listRanking.take(10).toList();
+
+    if (mounted) {
+      setState(() {
+        _celulasExibidas = top4Celulas;
+        _rankingExibido = top10Ranking;
+        _carregando = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_carregando) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
       child: Column(
@@ -55,21 +176,26 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
 
           const SizedBox(height: 12),
 
-          GridView.builder(
-            itemCount: celulas.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1.5,
-            ),
-            itemBuilder: (context, index) {
-              return _CelulaCard(celula: celulas[index]);
-            },
-          ),
+          _celulasExibidas.isEmpty
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text('Nenhuma ação realizada neste período.'),
+                )
+              : GridView.builder(
+                  itemCount: _celulasExibidas.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.5,
+                  ),
+                  itemBuilder: (context, index) {
+                    return _CelulaCard(celula: _celulasExibidas[index]);
+                  },
+                ),
 
           const SizedBox(height: 24),
 
@@ -83,58 +209,63 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
 
           const SizedBox(height: 12),
 
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x12000000),
-                  blurRadius: 10,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: List.generate(ranking.length, (index) {
-                final item = ranking[index];
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    children: [
-                      Text(
-                        '${index + 1}.',
-                        style: const TextStyle(
-                          color: Color(0xFF00AEEF),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      Expanded(
-                        child: Text(
-                          item.nome,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-
-                      Text(
-                        item.total.toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
+          _rankingExibido.isEmpty
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text('Nenhuma ação realizada neste período.'),
+                )
+              : Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x12000000),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
-                );
-              }),
-            ),
-          ),
+                  child: Column(
+                    children: List.generate(_rankingExibido.length, (index) {
+                      final item = _rankingExibido[index];
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            Text(
+                              '${index + 1}.',
+                              style: const TextStyle(
+                                color: Color(0xFF00AEEF),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: Text(
+                                item.nome,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+
+                            Text(
+                              item.total.toString(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ),
+                ),
 
           const SizedBox(height: 24),
 
@@ -150,9 +281,9 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
 
           Wrap(
             spacing: 8,
-            children: List.generate(periodos.length, (index) {
+            children: List.generate(PERIODOS.length, (index) {
               return ChoiceChip(
-                label: Text(periodos[index]),
+                label: Text(PERIODOS[index]),
                 selected: periodoSelecionado == index,
                 selectedColor: const Color(0xFF00AEEF),
                 labelStyle: TextStyle(
@@ -163,7 +294,9 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
                 onSelected: (_) {
                   setState(() {
                     periodoSelecionado = index;
+                    _carregando = true;
                   });
+                  _atualizarPeriodo();
                 },
               );
             }),
