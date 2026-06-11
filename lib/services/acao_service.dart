@@ -18,17 +18,35 @@ class AcaoService {
     }
   }
 
+  bool _isDireta(String tipoAcao) {
+    final lower = tipoAcao.toLowerCase();
+    if (lower == 'direta') return true;
+    if (lower == 'indireta') return false;
+    final directKeywords = ['feedback', 'correção', 'coaching', 'reescuta', 'orientação', 'calibração', 'calibragem'];
+    for (var kw in directKeywords) {
+      if (lower.contains(kw)) return true;
+    }
+    return false;
+  }
+
   Future<List<Acao>?> obterAcoesTotaisPorAnalista(String idAnalista, String? dataAcao) async {
     try {
-      QuerySnapshot snapshot = dataAcao == null ? await _db.collection('acao').where(
+      QuerySnapshot snapshot = await _db.collection('acao').where(
         'id_analista', isEqualTo: idAnalista
-      ).get() : await _db.collection('acao').where(
-        'id_analista', isEqualTo: idAnalista
-      ).where(
-        'data_acao', isEqualTo: dataAcao
       ).get();
+      
+      if (snapshot.size == 0) {
+        snapshot = await _db.collection('acao').where(
+          'analista_id', isEqualTo: idAnalista
+        ).get();
+      }
+
       if (snapshot.size != 0) {
-        return snapshot.docs.map((doc) => Acao.fromFirestore(doc)).toList();
+        List<Acao> acoes = snapshot.docs.map((doc) => Acao.fromFirestore(doc)).toList();
+        if (dataAcao != null) {
+          acoes = acoes.where((a) => a.dataAcao == dataAcao).toList();
+        }
+        return acoes;
       }
       else {
         return null;
@@ -40,23 +58,11 @@ class AcaoService {
 
   Future<List<Acao>?> obterAcoesIndiretasPorAnalista(String idAnalista, String? dataAcao) async {
     try {
-      QuerySnapshot snapshot = dataAcao == null ? await _db.collection('acao').where(
-        'id_analista', isEqualTo: idAnalista
-      ).where(
-        'tipo_acao', isEqualTo: 'Indireta'
-      ).get() : await _db.collection('acao').where(
-        'id_analista', isEqualTo: idAnalista
-      ).where(
-        'data_acao', isEqualTo: dataAcao
-      ).where(
-        'tipo_acao', isEqualTo: 'Indireta'
-      ).get();
-      if (snapshot.size != 0) {
-        return snapshot.docs.map((doc) => Acao.fromFirestore(doc)).toList();
+      List<Acao>? todas = await obterAcoesTotaisPorAnalista(idAnalista, dataAcao);
+      if (todas != null) {
+        return todas.where((a) => !_isDireta(a.tipoAcao ?? '')).toList();
       }
-      else {
-        return null;
-      }
+      return null;
     } catch (error) {
       throw "Erro ao obter Ações Indiretas do Analista: ${error.toString()}";
     }
@@ -64,23 +70,11 @@ class AcaoService {
 
   Future<List<Acao>?> obterAcoesDiretasPorAnalista(String idAnalista, String? dataAcao) async {
       try {
-        QuerySnapshot snapshot = dataAcao == null ? await _db.collection('acao').where(
-          'id_analista', isEqualTo: idAnalista
-        ).where(
-          'tipo_acao', isEqualTo: 'Direta'
-        ).get() : await _db.collection('acao').where(
-          'id_analista', isEqualTo: idAnalista
-        ).where(
-          'data_acao', isEqualTo: dataAcao
-        ).where(
-          'tipo_acao', isEqualTo: 'Direta'
-        ).get();
-        if (snapshot.size != 0) {
-          return snapshot.docs.map((doc) => Acao.fromFirestore(doc)).toList();
+        List<Acao>? todas = await obterAcoesTotaisPorAnalista(idAnalista, dataAcao);
+        if (todas != null) {
+          return todas.where((a) => _isDireta(a.tipoAcao ?? '')).toList();
         }
-        else {
-          return null;
-        }
+        return null;
     } catch (error) {
       throw "Erro ao obter Ações Diretas do Analista: ${error.toString()}";
     }

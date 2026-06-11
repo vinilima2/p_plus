@@ -24,7 +24,10 @@ class MyApp extends StatelessWidget {
         title: 'P+',
         debugShowCheckedModeBanner: false, // Tira a faixa de "Debug" do canto
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+          dialogTheme: DialogThemeData(
+            backgroundColor: Colors.white
+          ),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
         ),
         routes: Routes.rotasPadrao,
         initialRoute: 'login',

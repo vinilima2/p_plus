@@ -32,12 +32,12 @@ class Acao {
     Map data = doc.data() as Map<String, dynamic>;
     return Acao(
       id: doc.id,
-      idAnalista: data['id_analista'] ?? '<desconhecido>',
+      idAnalista: data['id_analista'] ?? data['analista_id'] ?? '<desconhecido>',
       operador: data['operador'] ?? '<desconhecido>',
       matriculaOperador: data['matricula_operador'] ?? '<desconhecido>',
       turnoOperador: data['turno_operador'] ?? '<desconhecido>',
       tipoAcao: data['tipo_acao'] ?? '<desconhecido>',
-      acao: data['acao'] ?? '<desconhecido>',
+      acao: data['acao'] ?? data['tipo_acao'] ?? '<desconhecido>',
       dataAcao: data['data_acao'] ?? '<desconhecido>',
       quartil: data['quartil'] ?? '<desconhecido>',
       operacao: data['operacao'] ?? '<desconhecido>',
