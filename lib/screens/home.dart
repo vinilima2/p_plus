@@ -39,7 +39,6 @@ class _HomeState extends State<Home> {
     _carregarDados();
   }
 
-
   Future<void> _carregarDados() async {
     final autenticacao = context.read<AutenticacaoProvider>();
     final idAnalista = autenticacao.token;
@@ -51,17 +50,35 @@ class _HomeState extends State<Home> {
       final acaoService = AcaoService();
 
       final analista = await analistaService.obterAnalista(idAnalista);
+   
       if (analista != null && analista.idEquipe != null) {
         final equipe = await equipeService.obterEquipe(analista.idEquipe!);
-        
+      
         final dataHoje = CustomDateUtils.dataAtualString();
-        final acoesTotais = await acaoService.obterAcoesTotaisPorAnalista(idAnalista, dataHoje) ?? [];
-        final acoesDiretas = await acaoService.obterAcoesDiretasPorAnalista(idAnalista, dataHoje) ?? [];
-        final acoesIndiretas = await acaoService.obterAcoesIndiretasPorAnalista(idAnalista, dataHoje) ?? [];
-
-        final metaTotal = (equipe?.metaAcoesDiretas ?? 0) + (equipe?.metaAcoesIndiretas ?? 0);
+        final acoesTotais =
+            await acaoService.obterAcoesTotaisPorAnalista(
+              idAnalista,
+              dataHoje,
+            ) ??
+            [];
+        final acoesDiretas =
+            await acaoService.obterAcoesDiretasPorAnalista(
+              idAnalista,
+              dataHoje,
+            ) ??
+            [];
+        final acoesIndiretas =
+            await acaoService.obterAcoesIndiretasPorAnalista(
+              idAnalista,
+              dataHoje,
+            ) ??
+            [];
+        final metaTotal =
+            (equipe?.metaAcoesDiretas ?? 0) + (equipe?.metaAcoesIndiretas ?? 0);
         final totalRealizado = acoesTotais.length;
-        final porcentagem = metaTotal > 0 ? ((totalRealizado / metaTotal) * 100).round() : 0;
+        final porcentagem = metaTotal > 0
+            ? ((totalRealizado / metaTotal) * 100).round()
+            : 0;
 
         if (mounted) {
           setState(() {
@@ -88,8 +105,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-
-
   Widget indicadorCard({
     required String titulo,
     required String valor,
@@ -97,13 +112,8 @@ class _HomeState extends State<Home> {
   }) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 10,
-      ),
-      padding: const EdgeInsets.symmetric(
-        vertical: 20,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: cor,
         borderRadius: BorderRadius.circular(20),
@@ -112,10 +122,7 @@ class _HomeState extends State<Home> {
         children: [
           Text(
             titulo,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 24),
           ),
           const SizedBox(height: 10),
           Text(
@@ -136,21 +143,18 @@ class _HomeState extends State<Home> {
     final autenticacao = context.read<AutenticacaoProvider>();
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
+          backgroundColor: Colors.white,
           automaticallyImplyLeading: false,
           centerTitle: true,
-          title: Text(
-            'Bem-vindo ${autenticacao.nome ?? ""}',
-          ),
+          title: Text('Bem-vindo ${autenticacao.nome ?? ""}'),
           actions: [
             IconButton(
               onPressed: () {
                 Navigator.pushReplacementNamed(context, 'login');
               },
-              icon: const Icon(
-                Icons.close,
-                color: Colors.red,
-              ),
+              icon: const Icon(Icons.close, color: Colors.red),
             ),
           ],
         ),
@@ -168,9 +172,7 @@ class _HomeState extends State<Home> {
                           ? 'Carregando metas...'
                           : 'Você atingiu $_porcentagemMeta% da sua meta diária!',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 22,
-                      ),
+                      style: const TextStyle(fontSize: 22),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -185,10 +187,7 @@ class _HomeState extends State<Home> {
                     ),
                     child: Text(
                       CustomDateUtils.formatarDataHora(DateTime.now()),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ),
                   const SizedBox(height: 15),
@@ -211,29 +210,26 @@ class _HomeState extends State<Home> {
               ),
             ),
             const DetalhesScreen(),
-            const Center(
-              child: Text(
-                'Tela 3',
-                style: TextStyle(fontSize: 24),
-              ),
-            ),
+            const Center(child: Text('Tela 3', style: TextStyle(fontSize: 24))),
           ],
         ),
+
         bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.white,
           currentIndex: indice,
           onTap: mudarTela,
           items: const [
             BottomNavigationBarItem(
               label: '',
-              icon: Icon(Icons.home),
+              icon: Icon(Icons.home, size: 35),
             ),
             BottomNavigationBarItem(
               label: '',
-              icon: Icon(Icons.phonelink_lock_rounded),
+              icon: Icon(Icons.arrow_outward_sharp, size: 35),
             ),
             BottomNavigationBarItem(
               label: '',
-              icon: Icon(Icons.calendar_month),
+              icon: Icon(Icons.calendar_month, size: 35),
             ),
           ],
         ),

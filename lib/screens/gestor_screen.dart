@@ -82,7 +82,10 @@ class _GestorScreenState extends State<GestorScreen> {
               Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red, size: 30),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStatePropertyAll(Colors.red)
+                  ),
+                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
                   onPressed: () {
                     _mostrarLogoff();
                   },
@@ -102,7 +105,7 @@ class _GestorScreenState extends State<GestorScreen> {
                   'Gerenciar equipe',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 25,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -137,25 +140,22 @@ class _GestorScreenState extends State<GestorScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // Botão: Alterar meta de ações (⚙️ preto)
               _buildBottomButton(
-                icon: Icons.settings,
+                icon: Icons.track_changes_outlined,
                 color: Colors.black,
                 onPressed: () {
                   _mostrarAlterarMeta();
                 },
               ),
-              // Botão: Incluir novo cadastro (+ verde)
               _buildBottomButton(
-                icon: Icons.add_circle,
+                icon: Icons.person_add,
                 color: Colors.green,
                 onPressed: () {
                   _mostrarNovoUsuario();
                 },
               ),
-              // Botão: Cadastrar ações via planilha (+ azul/ciano)
               _buildBottomButton(
-                icon: Icons.add,
+                icon: Icons.cloud_upload_sharp,
                 color: Colors.cyan,
                 onPressed: () {
                   _mostrarInserirAcoes();
@@ -193,7 +193,7 @@ class _GestorScreenState extends State<GestorScreen> {
                   ),
                 ),
                 Text(
-                  estaAtivo ? 'Analista (Ativo)' : 'Analista (Bloqueado)',
+                  estaAtivo ? 'Ativo' : 'Bloqueado',
                   style: TextStyle(
                     fontSize: 14,
                     color: estaAtivo ? Colors.grey : Colors.red,
@@ -205,7 +205,7 @@ class _GestorScreenState extends State<GestorScreen> {
 
           // Botão: Excluir (X vermelho)
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.red),
+            icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () {
               _mostrarExcluirMembro(membro);
             },

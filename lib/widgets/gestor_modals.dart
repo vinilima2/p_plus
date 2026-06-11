@@ -15,7 +15,7 @@ class ModalExcluirMembro {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+           // color: Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white, width: 4),
           ),
@@ -103,7 +103,7 @@ class ModalEditarCadastro {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+              //  color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white, width: 4),
               ),
@@ -256,7 +256,7 @@ class ModalBloquearUsuario {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+          //  color: Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white, width: 4),
           ),
@@ -358,7 +358,7 @@ class ModalAlterarMeta {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+        //    color: Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white, width: 4),
           ),
@@ -479,7 +479,7 @@ class ModalNovoUsuario {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+          //  color: Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white, width: 4),
           ),
@@ -626,7 +626,7 @@ class ModalInserirAcoes {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+             //   color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white, width: 4),
               ),
