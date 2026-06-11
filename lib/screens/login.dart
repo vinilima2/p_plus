@@ -229,6 +229,10 @@ class _LoginState extends State<Login> {
                           fontWeight: FontWeight.w600,
                           fontSize: 18,
                         ),
+                        prefixIcon: const Opacity(
+                          opacity: 0,
+                          child: Icon(Icons.visibility),
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             obscurePassword

@@ -259,10 +259,6 @@ class _HomeState extends State<Home> {
             ),
             BottomNavigationBarItem(
               label: '',
-              icon: Icon(Icons.arrow_outward_sharp, size: 35),
-            ),
-            BottomNavigationBarItem(
-              label: '',
               icon: Icon(Icons.calendar_month, size: 35),
             ),
           ],
