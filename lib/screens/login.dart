@@ -47,73 +47,80 @@ class _LoginState extends State<Login> {
 
     LoginService loginService = LoginService();
 
-    loginService.login(email, senha).then((dados) {
-      if (mounted) {
-        if (dados != null) {
-          if (dados.tipoUsuario == 'Analista') {
-            AnalistaService().obterAnalista(dados.idUsuario ?? '').then((analista) {
-              if (mounted) {
-                context.read<AutenticacaoProvider>().atualizarDados(
-                  token: dados.idUsuario ?? '',
-                  nome: analista?.nome ?? 'Analista',
-                  email: email,
-                );
-                Navigator.of(context).pushNamed('home');
+    loginService
+        .login(email, senha)
+        .then((dados) {
+          if (mounted) {
+            if (dados != null) {
+              if (dados.tipoUsuario == 'Analista') {
+                AnalistaService().obterAnalista(dados.idUsuario ?? '').then((
+                  analista,
+                ) {
+                  if (mounted) {
+                    context.read<AutenticacaoProvider>().atualizarDados(
+                      token: dados.idUsuario ?? '',
+                      nome: analista?.nome ?? 'Analista',
+                      email: email,
+                    );
+                    Navigator.of(context).pushNamed('home');
+                  }
+                });
+              } else if (dados.tipoUsuario == 'Gestor') {
+                GestorService().obterGestor(dados.idUsuario ?? '').then((
+                  gestor,
+                ) {
+                  if (mounted) {
+                    context.read<AutenticacaoProvider>().atualizarDados(
+                      token: dados.idUsuario ?? '',
+                      nome: gestor?.nome ?? 'Gestor',
+                      email: email,
+                    );
+                    Navigator.of(context).pushNamed('gestor');
+                  }
+                });
               }
-            });
-          } else if (dados.tipoUsuario == 'Gestor') {
-            GestorService().obterGestor(dados.idUsuario ?? '').then((gestor) {
-              if (mounted) {
-                context.read<AutenticacaoProvider>().atualizarDados(
-                  token: dados.idUsuario ?? '',
-                  nome: gestor?.nome ?? 'Gestor',
-                  email: email,
-                );
-                Navigator.of(context).pushNamed('gestor');
-              }
-            });
-          }
-        } else {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Erro de Autenticação'),
-                content: const Text('E-mail ou senha incorretos.'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
+            } else {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text('Erro de Autenticação'),
+                    content: const Text('E-mail ou senha incorretos.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  );
+                },
               );
-            },
-          );
-        }
-      }
-    }).catchError((error) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Erro'),
-              content: Text(error.toString()),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
+            }
+          }
+        })
+        .catchError((error) {
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Erro'),
+                  content: Text(error.toString()),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
             );
-          },
-        );
-      }
-    });
+          }
+        });
   }
 
   @override
@@ -128,21 +135,18 @@ class _LoginState extends State<Login> {
 
             child: SingleChildScrollView(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(height: 40),
-
-                  /// ICONE USUARIO
                   Container(
-                    width: 140,
-                    height: 140,
+                    width: 180,
+                    height: 180,
                     decoration: const BoxDecoration(
                       color: Color(0xFF12B7E5),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.person,
-                      size: 80,
+                      size: 150,
                       color: Colors.white,
                     ),
                   ),
@@ -153,41 +157,46 @@ class _LoginState extends State<Login> {
                   const Text(
                     'Bem-vindo!',
                     style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
                       color: Colors.black,
                     ),
                   ),
 
                   const SizedBox(height: 35),
 
-                  /// EMAIL
                   SizedBox(
-                    width: 230,
+                    width: 300,
                     height: 55,
                     child: TextFormField(
+                      maxLength: 255,
+                      keyboardType: TextInputType.emailAddress,
                       controller: emailController,
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
-                        hintText: 'Email',
-
+                        hintText: 'E-mail',
+                        counterText: '',
+                        hintStyle: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 14,
                         ),
 
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(15),
                           borderSide: const BorderSide(
                             color: Colors.black,
-                            width: 2.5,
+                            width: 3,
                           ),
                         ),
 
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(15),
                           borderSide: const BorderSide(
                             color: Colors.black,
-                            width: 2.5,
+                            width: 3,
                           ),
                         ),
                       ),
@@ -196,17 +205,24 @@ class _LoginState extends State<Login> {
 
                   const SizedBox(height: 20),
 
-                  /// SENHA
                   SizedBox(
-                    width: 230,
+                    width: 300,
                     height: 55,
                     child: TextFormField(
+                      maxLength: 255,
                       controller: senhaController,
                       obscureText: obscurePassword,
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
+                        counterText: '',
                         hintText: 'Senha',
-
+                        hintStyle: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             obscurePassword
@@ -221,21 +237,22 @@ class _LoginState extends State<Login> {
                           },
                         ),
 
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+                         enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
                           borderSide: const BorderSide(
                             color: Colors.black,
-                            width: 2.5,
+                            width: 3,
                           ),
                         ),
 
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(15),
                           borderSide: const BorderSide(
                             color: Colors.black,
-                            width: 2.5,
+                            width: 3,
                           ),
                         ),
+              
                       ),
                     ),
                   ),
@@ -244,15 +261,15 @@ class _LoginState extends State<Login> {
 
                   /// BOTAO
                   SizedBox(
-                    width: 140,
+                    width: 180,
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         elevation: 0,
-                        side: const BorderSide(color: Colors.black, width: 2.5),
+                        side: const BorderSide(color: Colors.black, width: 3),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                       ),
 
@@ -268,14 +285,16 @@ class _LoginState extends State<Login> {
                   const SizedBox(height: 45),
 
                   /// LOGO
-                  SizedBox(width: 110, child: Image.asset('assets/logo.png')),
-
                   const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
         ),
+      ),
+      bottomSheet: Padding(
+        padding: EdgeInsetsGeometry.only(bottom: 25),
+        child: SizedBox(width: 140, child: Image.asset('assets/logo.png')),
       ),
     );
   }
