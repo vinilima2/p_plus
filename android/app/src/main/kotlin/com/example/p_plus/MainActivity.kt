@@ -1,4 +1,4 @@
-package com.example.p_plus
+package br.com.p_plus
 
 import io.flutter.embedding.android.FlutterActivity
 

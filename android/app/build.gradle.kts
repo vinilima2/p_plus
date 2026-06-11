@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.p_plus"
+    namespace = "br.com.p_plus"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
