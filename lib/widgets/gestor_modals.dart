@@ -240,11 +240,26 @@ class ModalEditarCadastro {
 }
 
 // ============================================================
-// MODAL 3: BLOQUEAR USUÁRIO (Slide 8)
+// MODAL 3: BLOQUEAR USUÁRIO COM MOTIVO (Slide 8 - ATUALIZADO)
 // ============================================================
 class ModalBloquearUsuario {
-  static void mostrar(BuildContext context, String nomeMembro, bool estaAtivo, Function(String) onBloquear) {
-    final motivoController = TextEditingController();
+  static void mostrar(
+    BuildContext context,
+    String nomeMembro,
+    bool estaAtivo,
+    Function(String motivo) onBloquear,
+  ) {
+    // Lista de motivos pré-definidos
+    final List<String> motivos = [
+      'Férias',
+      'Licença Maternidade',
+      'Licença Médica',
+      'Afastamento',
+      'Demissão',
+      'Outros',
+    ];
+
+    String? motivoSelecionado;
 
     showDialog(
       context: context,
@@ -272,69 +287,93 @@ class ModalBloquearUsuario {
               ),
               const SizedBox(height: 20),
 
-              // Novo status
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Novo status:', style: TextStyle(fontSize: 16)),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: !estaAtivo ? Colors.green[700] : Colors.red[700],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      !estaAtivo ? 'ATIVO' : 'INATIVO',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                  // Novo status
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Novo status:', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: estaAtivo ? Colors.red[700] : Colors.green[700],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          estaAtivo ? 'INATIVO' : 'ATIVO',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ========== CAMPO DE MOTIVO (NOVO!) ==========
+                  const Text(
+                    'Motivo:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Dropdown de motivos
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        hint: const Text('Selecione um motivo'),
+                        value: motivoSelecionado,
+                        items: motivos.map((String motivo) {
+                          return DropdownMenuItem<String>(
+                            value: motivo,
+                            child: Text(motivo),
+                          );
+                        }).toList(),
+                        onChanged: (String? novoValor) {
+                          setState(() {
+                            motivoSelecionado = novoValor;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Botão Bloquear (vermelho) - só ativa se selecionar motivo
+                  ElevatedButton(
+                    onPressed: motivoSelecionado != null
+                        ? () {
+                            Navigator.pop(context);
+                            onBloquear(motivoSelecionado!);
+                          }
+                        : null, // Desabilitado se não tiver motivo
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      disabledBackgroundColor: Colors.red[200],
+                    ),
+                    child: const Text(
+                      'Bloquear',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-
-              if (estaAtivo) ...[
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Motivo do bloqueio:', style: TextStyle(fontSize: 16)),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: motivoController,
-                  decoration: const InputDecoration(
-                    hintText: 'Ex: Férias, Desligamento, etc.',
-                    isDense: true,
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              // Botão Confirmar
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  onBloquear(motivoController.text.trim());
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: estaAtivo ? Colors.red : Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  estaAtivo ? 'Bloquear' : 'Desbloquear',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
