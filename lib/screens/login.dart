@@ -62,7 +62,10 @@ class _LoginState extends State<Login> {
                       nome: analista?.nome ?? 'Analista',
                       email: email,
                     );
-                    Navigator.of(context).pushNamed('home');
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      'home',
+                      (Route<dynamic> route) => false,
+                    );
                   }
                 });
               } else if (dados.tipoUsuario == 'Gestor') {
@@ -75,7 +78,10 @@ class _LoginState extends State<Login> {
                       nome: gestor?.nome ?? 'Gestor',
                       email: email,
                     );
-                    Navigator.of(context).pushNamed('gestor');
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      'gestor',
+                      (Route<dynamic> route) => false,
+                    );
                   }
                 });
               }
@@ -237,7 +243,7 @@ class _LoginState extends State<Login> {
                           },
                         ),
 
-                         enabledBorder: OutlineInputBorder(
+                        enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
                           borderSide: const BorderSide(
                             color: Colors.black,
@@ -252,7 +258,6 @@ class _LoginState extends State<Login> {
                             width: 3,
                           ),
                         ),
-              
                       ),
                     ),
                   ),
