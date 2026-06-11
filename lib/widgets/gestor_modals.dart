@@ -4,18 +4,20 @@ import 'package:flutter/material.dart';
 // MODAL 1: EXCLUIR MEMBRO DA EQUIPE (Slide 6)
 // ============================================================
 class ModalExcluirMembro {
-  static void mostrar(BuildContext context, String nomeMembro, VoidCallback onConfirmar) {
+  static void mostrar(
+    BuildContext context,
+    String nomeMembro,
+    VoidCallback onConfirmar,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false, // Não fecha ao clicar fora
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-           // color: Colors.grey[200],
+            // color: Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white, width: 4),
           ),
@@ -25,10 +27,7 @@ class ModalExcluirMembro {
               const Text(
                 'Deseja excluir\npermanentemente?',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 24),
               Row(
@@ -43,7 +42,10 @@ class ModalExcluirMembro {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -62,7 +64,10 @@ class ModalExcluirMembro {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -86,7 +91,11 @@ class ModalExcluirMembro {
 // MODAL 2: EDITAR CADASTRO (Slide 7)
 // ============================================================
 class ModalEditarCadastro {
-  static void mostrar(BuildContext context, Map<String, dynamic> membro, Function(String, String) onSalvar) {
+  static void mostrar(
+    BuildContext context,
+    Map<String, dynamic> membro,
+    Function(String, String) onSalvar,
+  ) {
     final nomeController = TextEditingController(text: membro['nome']);
     final emailController = TextEditingController(text: membro['email'] ?? '');
     bool ativo = membro['ativo'] ?? true;
@@ -103,7 +112,7 @@ class ModalEditarCadastro {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-              //  color: Colors.grey[200],
+                //  color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white, width: 4),
               ),
@@ -173,7 +182,10 @@ class ModalEditarCadastro {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: ativo ? Colors.green[700] : Colors.red[700],
                             borderRadius: BorderRadius.circular(20),
@@ -199,12 +211,18 @@ class ModalEditarCadastro {
                       ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          onSalvar(nomeController.text.trim(), emailController.text.trim());
+                          onSalvar(
+                            nomeController.text.trim(),
+                            emailController.text.trim(),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.cyan,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -220,7 +238,10 @@ class ModalEditarCadastro {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -261,42 +282,59 @@ class ModalBloquearUsuario {
 
     String? motivoSelecionado;
 
+    void habilitarDesabilitarUsuario() {
+      if (motivoSelecionado != null || !estaAtivo) {
+        Navigator.pop(context);
+
+        if (estaAtivo) {
+          onBloquear(motivoSelecionado!);
+        }
+      }
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-          //  color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white, width: 4),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                estaAtivo ? 'Bloquear usuário' : 'Desbloquear usuário',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                //color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white, width: 4),
               ),
-              const SizedBox(height: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    estaAtivo ? 'Desbloquear usuário' : 'Bloquear usuário',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 20),
 
                   // Novo status
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Novo status:', style: TextStyle(fontSize: 16)),
+                      const Text(
+                        'Novo status:',
+                        style: TextStyle(fontSize: 16),
+                      ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: estaAtivo ? Colors.red[700] : Colors.green[700],
+                          color: estaAtivo
+                              ? Colors.red[700]
+                              : Colors.green[700],
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -349,23 +387,24 @@ class ModalBloquearUsuario {
 
                   // Botão Bloquear (vermelho) - só ativa se selecionar motivo
                   ElevatedButton(
-                    onPressed: motivoSelecionado != null
-                        ? () {
-                            Navigator.pop(context);
-                            onBloquear(motivoSelecionado!);
-                          }
-                        : null, // Desabilitado se não tiver motivo
+                    onPressed:
+                        habilitarDesabilitarUsuario, // Desabilitado se não tiver motivo
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: estaAtivo ? Colors.red : Colors.green,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      disabledBackgroundColor: Colors.red[200],
+                      disabledBackgroundColor: estaAtivo
+                          ? Colors.red[400]
+                          : Colors.green[400],
                     ),
-                    child: const Text(
-                      'Bloquear',
+                    child: Text(
+                      estaAtivo ? 'Bloquear' : 'Desbloquear',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -383,21 +422,28 @@ class ModalBloquearUsuario {
 // MODAL 4: ALTERAR META DIÁRIA (Slide 9)
 // ============================================================
 class ModalAlterarMeta {
-  static void mostrar(BuildContext context, int diretasAtual, int indiretasAtual, Function(int, int) onAlterar) {
-    final diretasController = TextEditingController(text: diretasAtual.toString());
-    final indiretasController = TextEditingController(text: indiretasAtual.toString());
+  static void mostrar(
+    BuildContext context,
+    int diretasAtual,
+    int indiretasAtual,
+    Function(int, int) onAlterar,
+  ) {
+    final diretasController = TextEditingController(
+      text: diretasAtual.toString(),
+    );
+    final indiretasController = TextEditingController(
+      text: indiretasAtual.toString(),
+    );
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-        //    color: Colors.grey[200],
+            //    color: Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white, width: 4),
           ),
@@ -406,10 +452,7 @@ class ModalAlterarMeta {
             children: [
               const Text(
                 'Alterar meta',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 20),
 
@@ -458,15 +501,21 @@ class ModalAlterarMeta {
                   // Botão Alterar (azul/ciano)
                   ElevatedButton(
                     onPressed: () {
-                      final novasDiretas = int.tryParse(diretasController.text) ?? diretasAtual;
-                      final novasIndiretas = int.tryParse(indiretasController.text) ?? indiretasAtual;
+                      final novasDiretas =
+                          int.tryParse(diretasController.text) ?? diretasAtual;
+                      final novasIndiretas =
+                          int.tryParse(indiretasController.text) ??
+                          indiretasAtual;
                       Navigator.pop(context);
                       onAlterar(novasDiretas, novasIndiretas);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.cyan,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -482,7 +531,10 @@ class ModalAlterarMeta {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -503,7 +555,10 @@ class ModalAlterarMeta {
 // MODAL 5: NOVO USUÁRIO (Slide 10)
 // ============================================================
 class ModalNovoUsuario {
-  static void mostrar(BuildContext context, Function(String, String, String) onCadastrar) {
+  static void mostrar(
+    BuildContext context,
+    Function(String, String, String) onCadastrar,
+  ) {
     final nomeController = TextEditingController();
     final emailController = TextEditingController();
     final senhaController = TextEditingController();
@@ -512,13 +567,11 @@ class ModalNovoUsuario {
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-          //  color: Colors.grey[200],
+            //  color: Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white, width: 4),
           ),
@@ -530,10 +583,7 @@ class ModalNovoUsuario {
               const Center(
                 child: Text(
                   'Novo usuário',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ),
               const SizedBox(height: 20),
@@ -613,7 +663,10 @@ class ModalNovoUsuario {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.cyan,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -629,7 +682,10 @@ class ModalNovoUsuario {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -665,7 +721,7 @@ class ModalInserirAcoes {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-             //   color: Colors.grey[200],
+                //   color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white, width: 4),
               ),
@@ -674,10 +730,7 @@ class ModalInserirAcoes {
                 children: [
                   const Text(
                     'Inserir ações',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 30),
 
@@ -698,10 +751,13 @@ class ModalInserirAcoes {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          arquivoSelecionado ?? 'Selecione o arquivo para upload',
+                          arquivoSelecionado ??
+                              'Selecione o arquivo para upload',
                           style: TextStyle(
                             fontSize: 14,
-                            color: arquivoSelecionado != null ? Colors.black : Colors.grey[600],
+                            color: arquivoSelecionado != null
+                                ? Colors.black
+                                : Colors.grey[600],
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -723,7 +779,10 @@ class ModalInserirAcoes {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.cyan,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -739,7 +798,10 @@ class ModalInserirAcoes {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
