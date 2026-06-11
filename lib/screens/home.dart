@@ -138,6 +138,31 @@ class _HomeState extends State<Home> {
     );
   }
 
+  ///EXTRAIR EM WIDGET SEPARADO DEPOIS POIS SE REPETE
+  void _mostrarLogoff() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Deseja sair?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('NÃO', style: TextStyle(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Volta para a tela de login
+              Navigator.pushReplacementNamed(context, 'login');
+            },
+            child: const Text('SIM', style: TextStyle(color: Colors.green)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final autenticacao = context.read<AutenticacaoProvider>();
@@ -150,11 +175,20 @@ class _HomeState extends State<Home> {
           centerTitle: true,
           title: Text('Bem-vindo ${autenticacao.nome ?? ""}'),
           actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, 'login');
-              },
-              icon: const Icon(Icons.close, color: Colors.red),
+            Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                margin: EdgeInsets.all(2),
+                child: IconButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStatePropertyAll(Colors.red),
+                  ),
+                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: () {
+                    _mostrarLogoff();
+                  },
+                ),
+              ),
             ),
           ],
         ),

@@ -164,15 +164,40 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Top 4 células no período',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            'Período',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 12),
 
+          Wrap(
+            spacing: 8,
+            children: List.generate(PERIODOS.length, (index) {
+              return ChoiceChip(
+                label: Text(PERIODOS[index]),
+                selected: periodoSelecionado == index,
+                selectedColor: const Color(0xFF00AEEF),
+                labelStyle: TextStyle(
+                  color: periodoSelecionado == index
+                      ? Colors.white
+                      : Colors.black,
+                ),
+                onSelected: (_) {
+                  setState(() {
+                    periodoSelecionado = index;
+                    _carregando = true;
+                  });
+                  _atualizarPeriodo();
+                },
+              );
+            }),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Top 4 células no período',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
           _celulasExibidas.isEmpty
               ? const Padding(
                   padding: EdgeInsets.symmetric(vertical: 20),
@@ -182,8 +207,7 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
                   itemCount: _celulasExibidas.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
@@ -198,10 +222,7 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
 
           const Text(
             'Top 10 ações realizadas',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 12),
@@ -263,41 +284,6 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
                     }),
                   ),
                 ),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            'Período',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Wrap(
-            spacing: 8,
-            children: List.generate(PERIODOS.length, (index) {
-              return ChoiceChip(
-                label: Text(PERIODOS[index]),
-                selected: periodoSelecionado == index,
-                selectedColor: const Color(0xFF00AEEF),
-                labelStyle: TextStyle(
-                  color: periodoSelecionado == index
-                      ? Colors.white
-                      : Colors.black,
-                ),
-                onSelected: (_) {
-                  setState(() {
-                    periodoSelecionado = index;
-                    _carregando = true;
-                  });
-                  _atualizarPeriodo();
-                },
-              );
-            }),
-          ),
         ],
       ),
     );
@@ -305,9 +291,7 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
 }
 
 class _CelulaCard extends StatelessWidget {
-  const _CelulaCard({
-    required this.celula,
-  });
+  const _CelulaCard({required this.celula});
 
   final _CelulaResumo celula;
 
@@ -336,19 +320,13 @@ class _CelulaCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _MiniIndicador(
-                  titulo: 'D',
-                  valor: celula.diretas,
-                ),
+                child: _MiniIndicador(titulo: 'D', valor: celula.diretas),
               ),
 
               const SizedBox(width: 8),
 
               Expanded(
-                child: _MiniIndicador(
-                  titulo: 'I',
-                  valor: celula.indiretas,
-                ),
+                child: _MiniIndicador(titulo: 'I', valor: celula.indiretas),
               ),
             ],
           ),
@@ -359,10 +337,7 @@ class _CelulaCard extends StatelessWidget {
 }
 
 class _MiniIndicador extends StatelessWidget {
-  const _MiniIndicador({
-    required this.titulo,
-    required this.valor,
-  });
+  const _MiniIndicador({required this.titulo, required this.valor});
 
   final String titulo;
   final int valor;
@@ -388,12 +363,7 @@ class _MiniIndicador extends StatelessWidget {
 }
 
 class _CelulaResumo {
-  const _CelulaResumo(
-    this.nome,
-    this.diretas,
-    this.indiretas,
-    this.cor,
-  );
+  const _CelulaResumo(this.nome, this.diretas, this.indiretas, this.cor);
 
   final String nome;
   final int diretas;
