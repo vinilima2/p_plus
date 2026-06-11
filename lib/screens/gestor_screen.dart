@@ -42,7 +42,9 @@ class _GestorScreenState extends State<GestorScreen> {
       if (gestor != null && gestor.idEquipe != null) {
         _idEquipe = gestor.idEquipe;
         final equipe = await equipeService.obterEquipe(gestor.idEquipe!);
-        final listaMembros = await analistaService.obterAnalistasPorEquipe(gestor.idEquipe!) ?? [];
+        final listaMembros =
+            await analistaService.obterAnalistasPorEquipe(gestor.idEquipe!) ??
+            [];
 
         if (mounted) {
           setState(() {
@@ -82,7 +84,7 @@ class _GestorScreenState extends State<GestorScreen> {
                 alignment: Alignment.topRight,
                 child: IconButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStatePropertyAll(Colors.red)
+                    backgroundColor: MaterialStatePropertyAll(Colors.red),
                   ),
                   icon: const Icon(Icons.close, color: Colors.white, size: 30),
                   onPressed: () {
@@ -95,7 +97,10 @@ class _GestorScreenState extends State<GestorScreen> {
 
               // ========== TÍTULO "GERENCIAR EQUIPE" ==========
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.cyan,
                   borderRadius: BorderRadius.circular(20),
@@ -117,14 +122,14 @@ class _GestorScreenState extends State<GestorScreen> {
                 child: _carregando
                     ? const Center(child: CircularProgressIndicator())
                     : membros.isEmpty
-                        ? const Center(child: Text('Nenhum analista na equipe.'))
-                        : ListView.builder(
-                            itemCount: membros.length,
-                            itemBuilder: (context, index) {
-                              final membro = membros[index];
-                              return _buildMembroCard(membro);
-                            },
-                          ),
+                    ? const Center(child: Text('Nenhum analista na equipe.'))
+                    : ListView.builder(
+                        itemCount: membros.length,
+                        itemBuilder: (context, index) {
+                          final membro = membros[index];
+                          return _buildMembroCard(membro);
+                        },
+                      ),
               ),
             ],
           ),
@@ -225,7 +230,10 @@ class _GestorScreenState extends State<GestorScreen> {
               color: estaAtivo ? Colors.red : Colors.green,
             ),
             onPressed: () {
-              _mostrarBloquearUsuario(membro, 0); // NÃO ENTENDI O QUE A VARIÁVEL 'INDEX' SIGNIFICA!!
+              _mostrarBloquearUsuario(
+                membro,
+                0,
+              ); // NÃO ENTENDI O QUE A VARIÁVEL 'INDEX' SIGNIFICA!!
             },
           ),
         ],
@@ -252,9 +260,7 @@ class _GestorScreenState extends State<GestorScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Deseja sair?'),
         actions: [
           TextButton(
@@ -276,27 +282,23 @@ class _GestorScreenState extends State<GestorScreen> {
 
   // 2. EXCLUIR MEMBRO
   void _mostrarExcluirMembro(Analista membro) {
-    ModalExcluirMembro.mostrar(
-      context,
-      membro.nome ?? '',
-      () async {
-        try {
-          await AnalistaService().excluirAnalista(membro.id ?? '');
-          _carregarDados();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${membro.nome} foi excluído!')),
-            );
-          }
-        } catch (error) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
-          }
+    ModalExcluirMembro.mostrar(context, membro.nome ?? '', () async {
+      try {
+        await AnalistaService().excluirAnalista(membro.id ?? '');
+        _carregarDados();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${membro.nome} foi excluído!')),
+          );
         }
-      },
-    );
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.toString())));
+        }
+      }
+    });
   }
 
   // 3. EDITAR CADASTRO
@@ -306,140 +308,144 @@ class _GestorScreenState extends State<GestorScreen> {
       'email': membro.email,
       'ativo': membro.status ?? true,
     };
-    ModalEditarCadastro.mostrar(
-      context,
-      membroMap,
-      (novoNome, novoEmail) async {
-        try {
-          await AnalistaService().editarDadosAnalista(membro.id ?? '', novoNome, novoEmail);
-          _carregarDados();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Cadastro alterado com sucesso!')),
-            );
-          }
-        } catch (error) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
-          }
+    ModalEditarCadastro.mostrar(context, membroMap, (
+      novoNome,
+      novoEmail,
+    ) async {
+      try {
+        await AnalistaService().editarDadosAnalista(
+          membro.id ?? '',
+          novoNome,
+          novoEmail,
+        );
+        _carregarDados();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cadastro alterado com sucesso!')),
+          );
         }
-      },
-    );
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.toString())));
+        }
+      }
+    });
   }
 
   // 4. BLOQUEAR USUÁRIO (ATUALIZADO COM MOTIVO)
   void _mostrarBloquearUsuario(Analista membro, int index) {
     final bool estaAtivo = membros[index].status ?? false;
 
-    ModalBloquearUsuario.mostrar(
-      context,
-      membro.nome ?? '',
-      estaAtivo,
-      (String motivo) {  // ← Agora recebe o motivo!
-        setState(() {
-          membros[index].status = !estaAtivo;
-          // Guarda o motivo no membro (para mostrar depois ou enviar pra API)
-          membros[index].descricaoStatus = motivo;
-        });
+    ModalBloquearUsuario.mostrar(context, membro.nome ?? '', estaAtivo, (
+      String motivo,
+    ) {
+      // ← Agora recebe o motivo!
+      setState(() {
+        membros[index].status = !estaAtivo;
+        // Guarda o motivo no membro (para mostrar depois ou enviar pra API)
+        membros[index].descricaoStatus = motivo;
+      });
 
-        final acao = !estaAtivo ? 'ativado' : 'bloqueado';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${membro.nome ?? ''} foi $acao\nMotivo: $motivo',
-            ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      },
-    );
+      AnalistaService service = AnalistaService();
+      if (estaAtivo) {
+        service.bloquearAnalista(membros[index].id ?? '', 'Bloqueado');
+      } else {
+        service.desbloquearAnalista(membros[index].id ?? '');
+      }
+
+      final acao = !estaAtivo ? 'ativado' : 'bloqueado';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${membro.nome ?? ''} foi $acao\nMotivo: $motivo'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    });
   }
 
   // 5. ALTERAR META
   void _mostrarAlterarMeta() {
-    ModalAlterarMeta.mostrar(
-      context,
-      metaDiretas,
-      metaIndiretas,
-      (novasDiretas, novasIndiretas) async {
-        if (_idEquipe == null) return;
-        try {
-          await EquipeService().editarMetas(_idEquipe!, novasIndiretas, novasDiretas);
-          _carregarDados();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Meta alterada com sucesso!')),
-            );
-          }
-        } catch (error) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
-          }
+    ModalAlterarMeta.mostrar(context, metaDiretas, metaIndiretas, (
+      novasDiretas,
+      novasIndiretas,
+    ) async {
+      if (_idEquipe == null) return;
+      try {
+        await EquipeService().editarMetas(
+          _idEquipe!,
+          novasIndiretas,
+          novasDiretas,
+        );
+        _carregarDados();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Meta alterada com sucesso!')),
+          );
         }
-      },
-    );
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.toString())));
+        }
+      }
+    });
   }
 
   // 6. NOVO USUÁRIO
   void _mostrarNovoUsuario() {
-    ModalNovoUsuario.mostrar(
-      context,
-      (nome, email, senha) async {
-        if (_idEquipe == null) return;
-        if (nome.isEmpty || email.isEmpty || senha.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Preencha todos os campos!')),
-          );
-          return;
-        }
-        try {
-          final analista = Analista(
-            nome: nome,
-            email: email,
-            senha: senha,
-            idEquipe: _idEquipe!,
-            status: true,
-            descricaoStatus: 'Ativo',
-          );
-          String? novoId = await AnalistaService().criarAnalista(analista);
-          if (novoId == null) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Erro: E-mail já cadastrado!')),
-              );
-            }
-          } else {
-            _carregarDados();
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Novo analista cadastrado com sucesso!')),
-              );
-            }
-          }
-        } catch (error) {
+    ModalNovoUsuario.mostrar(context, (nome, email, senha) async {
+      if (_idEquipe == null) return;
+      if (nome.isEmpty || email.isEmpty || senha.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Preencha todos os campos!')),
+        );
+        return;
+      }
+      try {
+        final analista = Analista(
+          nome: nome,
+          email: email,
+          senha: senha,
+          idEquipe: _idEquipe!,
+          status: true,
+          descricaoStatus: 'Ativo',
+        );
+        String? novoId = await AnalistaService().criarAnalista(analista);
+        if (novoId == null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
+              const SnackBar(content: Text('Erro: E-mail já cadastrado!')),
+            );
+          }
+        } else {
+          _carregarDados();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Novo analista cadastrado com sucesso!'),
+              ),
             );
           }
         }
-      },
-    );
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.toString())));
+        }
+      }
+    });
   }
 
   // 7. INSERIR AÇÕES VIA PLANILHA
   void _mostrarInserirAcoes() {
-    ModalInserirAcoes.mostrar(
-      context,
-      () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ações inseridas com sucesso!')),
-        );
-      },
-    );
+    ModalInserirAcoes.mostrar(context, () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ações inseridas com sucesso!')),
+      );
+    });
   }
 }

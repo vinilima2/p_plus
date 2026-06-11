@@ -227,7 +227,7 @@ class ModalEditarCadastro {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text('Alterar'),
+                        child: const Text('Salvar'),
                       ),
                       const SizedBox(width: 16),
                       // Botão Cancelar (vermelho)
@@ -285,10 +285,7 @@ class ModalBloquearUsuario {
     void habilitarDesabilitarUsuario() {
       if (motivoSelecionado != null || !estaAtivo) {
         Navigator.pop(context);
-
-        if (estaAtivo) {
-          onBloquear(motivoSelecionado!);
-        }
+        onBloquear(motivoSelecionado ?? 'Desbloqueio');
       }
     }
 
@@ -671,7 +668,7 @@ class ModalNovoUsuario {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Alterar'),
+                    child: const Text('Salvar'),
                   ),
                   const SizedBox(width: 16),
                   // Botão Cancelar (vermelho)
