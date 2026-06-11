@@ -51,6 +51,7 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
     final hoje = DateTime(now.year, now.month, now.day);
     final dataAcao = DateTime(date.year, date.month, date.day);
 
+    // Posição presente nos períodos do arquivo constants.dart
     switch (periodoIdx) {
       case 0: // Dia (Hoje)
         return dataAcao.isAtSameMomentAs(hoje);
@@ -77,10 +78,6 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
     final lower = tipoAcao.toLowerCase();
     if (lower == 'direta') return true;
     if (lower == 'indireta') return false;
-    final directKeywords = ['feedback', 'correção', 'coaching', 'reescuta', 'orientação', 'calibração', 'calibragem'];
-    for (var kw in directKeywords) {
-      if (lower.contains(kw)) return true;
-    }
     return false;
   }
 
@@ -91,7 +88,7 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
       return _isNoPeriodo(date, periodoSelecionado);
     }).toList();
 
-    // 1. Agrupar por celula
+
     final Map<String, List<Acao>> porCelula = {};
     for (var acao in acoesNoPeriodo) {
       final cel = acao.celula ?? '<desconhecido>';
@@ -125,7 +122,7 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
       ));
     }
 
-    // 2. Agrupar por acao
+
     final Map<String, int> contagemAcoes = {};
     for (var acao in acoesNoPeriodo) {
       final desc = acao.acao ?? '<desconhecido>';
