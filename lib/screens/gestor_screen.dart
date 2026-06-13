@@ -79,20 +79,6 @@ class _GestorScreenState extends State<GestorScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // ========== BOTÃO LOGOFF (canto superior direito) ==========
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStatePropertyAll(Colors.red),
-                  ),
-                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                  onPressed: () {
-                    _mostrarLogoff();
-                  },
-                ),
-              ),
-
               const SizedBox(height: 10),
 
               // ========== TÍTULO "GERENCIAR EQUIPE" ==========
@@ -151,6 +137,28 @@ class _GestorScreenState extends State<GestorScreen> {
                   _mostrarAlterarMeta();
                 },
               ),
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(40),
+                  onTap: _mostrarLogoff,
+                  child: const Center(
+                    child: Icon(Icons.logout, color: Colors.grey, size: 23),
+                  ),
+                ),
+              ),
               _buildBottomButton(
                 icon: Icons.person_add,
                 color: Colors.green,
@@ -158,13 +166,13 @@ class _GestorScreenState extends State<GestorScreen> {
                   _mostrarNovoUsuario();
                 },
               ),
-              _buildBottomButton(
+              /*   _buildBottomButton(
                 icon: Icons.cloud_upload_sharp,
                 color: Colors.cyan,
                 onPressed: () {
                   _mostrarInserirAcoes();
                 },
-              ),
+              ), */
             ],
           ),
         ),
@@ -179,7 +187,21 @@ class _GestorScreenState extends State<GestorScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 2),
+        color: Colors.white,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+        border: Border(
+          left: BorderSide(
+            color: estaAtivo ? Colors.green : Colors.red,
+            width: 15,
+          ),
+        ),
+        // border: Border.all(color: Colors.black, width: 2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -231,8 +253,7 @@ class _GestorScreenState extends State<GestorScreen> {
             ),
             onPressed: () {
               _mostrarBloquearUsuario(
-                membro,
-                0,
+                membro
               ); // NÃO ENTENDI O QUE A VARIÁVEL 'INDEX' SIGNIFICA!!
             },
           ),
@@ -335,24 +356,24 @@ class _GestorScreenState extends State<GestorScreen> {
   }
 
   // 4. BLOQUEAR USUÁRIO (ATUALIZADO COM MOTIVO)
-  void _mostrarBloquearUsuario(Analista membro, int index) {
-    final bool estaAtivo = membros[index].status ?? false;
+  void _mostrarBloquearUsuario(Analista membro) {
+    final bool estaAtivo = membro.status ?? false;
 
     ModalBloquearUsuario.mostrar(context, membro.nome ?? '', estaAtivo, (
       String motivo,
     ) {
       // ← Agora recebe o motivo!
       setState(() {
-        membros[index].status = !estaAtivo;
+        membro.status = !estaAtivo;
         // Guarda o motivo no membro (para mostrar depois ou enviar pra API)
-        membros[index].descricaoStatus = motivo;
+        membro.descricaoStatus = motivo;
       });
 
       AnalistaService service = AnalistaService();
       if (estaAtivo) {
-        service.bloquearAnalista(membros[index].id ?? '', 'Bloqueado');
+        service.bloquearAnalista(membro.id ?? '', 'Bloqueado');
       } else {
-        service.desbloquearAnalista(membros[index].id ?? '');
+        service.desbloquearAnalista(membro.id ?? '');
       }
 
       final acao = !estaAtivo ? 'ativado' : 'bloqueado';

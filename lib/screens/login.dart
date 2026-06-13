@@ -161,7 +161,7 @@ class _LoginState extends State<Login> {
 
                   /// TITULO
                   const Text(
-                    'Bem-vindo!',
+                    'Bem-vindo(a)!',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
@@ -229,6 +229,10 @@ class _LoginState extends State<Login> {
                           fontWeight: FontWeight.w600,
                           fontSize: 18,
                         ),
+                        prefixIcon: const Opacity(
+                          opacity: 0,
+                          child: Icon(Icons.visibility),
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             obscurePassword
@@ -291,15 +295,12 @@ class _LoginState extends State<Login> {
 
                   /// LOGO
                   const SizedBox(height: 40),
+                  SizedBox(width: 140, child: Image.asset('assets/logo.png')),
                 ],
               ),
             ),
           ),
         ),
-      ),
-      bottomSheet: Padding(
-        padding: EdgeInsetsGeometry.only(bottom: 25),
-        child: SizedBox(width: 140, child: Image.asset('assets/logo.png')),
       ),
     );
   }

@@ -283,10 +283,15 @@ class ModalBloquearUsuario {
     String? motivoSelecionado;
 
     void habilitarDesabilitarUsuario() {
-      if (motivoSelecionado != null || !estaAtivo) {
-        Navigator.pop(context);
-        onBloquear(motivoSelecionado ?? 'Desbloqueio');
+      if (motivoSelecionado == null && estaAtivo) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Selecione um motivo!')));
+        return;
       }
+
+      Navigator.pop(context);
+      onBloquear(motivoSelecionado ?? 'Desbloqueio');
     }
 
     showDialog(
@@ -347,63 +352,105 @@ class ModalBloquearUsuario {
                   const SizedBox(height: 20),
 
                   // ========== CAMPO DE MOTIVO (NOVO!) ==========
-                  const Text(
-                    'Motivo:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 8),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (estaAtivo) {
+                        return Column(
+                          children: [
+                            const Text(
+                              'Motivo:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
 
-                  // Dropdown de motivos
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        hint: const Text('Selecione um motivo'),
-                        value: motivoSelecionado,
-                        items: motivos.map((String motivo) {
-                          return DropdownMenuItem<String>(
-                            value: motivo,
-                            child: Text(motivo),
-                          );
-                        }).toList(),
-                        onChanged: (String? novoValor) {
-                          setState(() {
-                            motivoSelecionado = novoValor;
-                          });
-                        },
-                      ),
-                    ),
+                            // Dropdown de motivos
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  hint: const Text('Selecione um motivo'),
+                                  value: motivoSelecionado,
+                                  items: motivos.map((String motivo) {
+                                    return DropdownMenuItem<String>(
+                                      value: motivo,
+                                      child: Text(motivo),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? novoValor) {
+                                    setState(() {
+                                      motivoSelecionado = novoValor;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        );
+                      } else {
+                        return Container();
+                      }
+                    },
                   ),
-                  const SizedBox(height: 24),
-
-                  // Botão Bloquear (vermelho) - só ativa se selecionar motivo
-                  ElevatedButton(
-                    onPressed:
-                        habilitarDesabilitarUsuario, // Desabilitado se não tiver motivo
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: estaAtivo ? Colors.red : Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed:
+                            habilitarDesabilitarUsuario, // Desabilitado se não tiver motivo
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: estaAtivo
+                              ? Colors.red
+                              : Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          disabledBackgroundColor: estaAtivo
+                              ? Colors.red[400]
+                              : Colors.green[400],
+                        ),
+                        child: Text(
+                          estaAtivo ? 'Bloquear' : 'Desbloquear',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(
+                          context,
+                        ), // Desabilitado se não tiver motivo
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancelar',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      disabledBackgroundColor: estaAtivo
-                          ? Colors.red[400]
-                          : Colors.green[400],
-                    ),
-                    child: Text(
-                      estaAtivo ? 'Bloquear' : 'Desbloquear',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    ],
                   ),
                 ],
               ),

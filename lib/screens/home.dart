@@ -50,10 +50,10 @@ class _HomeState extends State<Home> {
       final acaoService = AcaoService();
 
       final analista = await analistaService.obterAnalista(idAnalista);
-   
+
       if (analista != null && analista.idEquipe != null) {
         final equipe = await equipeService.obterEquipe(analista.idEquipe!);
-      
+
         final dataHoje = CustomDateUtils.dataAtualString();
         final acoesTotais =
             await acaoService.obterAcoesTotaisPorAnalista(
@@ -173,24 +173,7 @@ class _HomeState extends State<Home> {
           backgroundColor: Colors.white,
           automaticallyImplyLeading: false,
           centerTitle: true,
-          title: Text('Bem-vindo ${autenticacao.nome ?? ""}'),
-          actions: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                margin: EdgeInsets.all(2),
-                child: IconButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStatePropertyAll(Colors.red),
-                  ),
-                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                  onPressed: () {
-                    _mostrarLogoff();
-                  },
-                ),
-              ),
-            ),
-          ],
+          title: Text('Bem-vindo(a) ${autenticacao.nome ?? ""}'),
         ),
         body: IndexedStack(
           index: indice,
@@ -204,7 +187,7 @@ class _HomeState extends State<Home> {
                     child: Text(
                       _carregando
                           ? 'Carregando metas...'
-                          : 'Você atingiu $_porcentagemMeta% da sua meta diária!',
+                          : '$_porcentagemMeta% da sua meta diária atingida!',
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 22),
                     ),
@@ -228,17 +211,17 @@ class _HomeState extends State<Home> {
                   indicadorCard(
                     titulo: 'Ações realizadas',
                     valor: _carregando ? '...' : '$_totalAcoes',
-                    cor: Colors.indigo,
+                    cor: Colors.cyan.shade400,
                   ),
                   indicadorCard(
                     titulo: 'Ações diretas',
                     valor: _carregando ? '...' : '$_acoesDiretas',
-                    cor: Colors.green,
+                    cor: Colors.cyan.shade700,
                   ),
                   indicadorCard(
                     titulo: 'Ações indiretas',
                     valor: _carregando ? '...' : '$_acoesIndiretas',
-                    cor: Colors.purple,
+                    cor: Colors.cyan.shade400,
                   ),
                 ],
               ),
@@ -247,25 +230,62 @@ class _HomeState extends State<Home> {
             const Center(child: Text('Tela 3', style: TextStyle(fontSize: 24))),
           ],
         ),
-
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.white,
-          currentIndex: indice,
-          onTap: mudarTela,
-          items: const [
-            BottomNavigationBarItem(
-              label: '',
-              icon: Icon(Icons.home, size: 35),
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.home,
+                    color: indice == 0 ? Colors.cyan.shade300 : Colors.grey,
+                    size: 35,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      indice = 0;
+                    });
+                  },
+                ),
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(40),
+                    onTap: _mostrarLogoff,
+                    child: const Center(
+                      child: Icon(Icons.logout, color: Colors.grey, size: 23),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.calendar_month,
+                    color: indice == 1 ? Colors.cyan.shade300 : Colors.grey,
+                    size: 35,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      indice = 1;
+                    });
+                  },
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              label: '',
-              icon: Icon(Icons.arrow_outward_sharp, size: 35),
-            ),
-            BottomNavigationBarItem(
-              label: '',
-              icon: Icon(Icons.calendar_month, size: 35),
-            ),
-          ],
+          ),
         ),
       ),
     );
