@@ -96,10 +96,10 @@ class _DetalhesScreenState extends State<DetalhesScreen> {
     }
 
     final coresCelulas = const [
-      Color(0xFF056D10),
-      Color(0xFFD5007D),
-      Color(0xFF2AB7A9),
-      Color(0xFFE46A00),
+      Color(0xFF26C6DA),
+      Color.fromARGB(255, 8, 117, 130),
+      Color(0xFF0097A7),
+      Color.fromARGB(255, 16, 166, 183),
     ];
 
     final List<_CelulaResumo> listCelulas = [];
